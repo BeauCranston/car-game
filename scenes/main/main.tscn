@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://burky1pdb7xqk"]
+
+[ext_resource type="Script" uid="uid://cimh80c4b4q8c" path="res://scenes/main/Main.cs" id="1_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://c6p5qa2emschj" path="res://scenes/road/road.tscn" id="2_l3cfh"]
+[ext_resource type="PackedScene" uid="uid://cmgcuypxcsry0" path="res://scenes/car/car.tscn" id="3_k2fmo"]
+
+[node name="Root" type="Node2D" unique_id=2055751553]
+script = ExtResource("1_1bvp3")
+
+[node name="RoadParalax" parent="." unique_id=530135758 instance=ExtResource("2_l3cfh")]
+scroll_offset = Vector2(-545, -745)
+
+[node name="Car" parent="." unique_id=439481678 instance=ExtResource("3_k2fmo")]
+position = Vector2(-1, -2)

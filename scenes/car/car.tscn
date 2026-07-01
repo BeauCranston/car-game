@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://cmgcuypxcsry0"]
+
+[ext_resource type="Script" uid="uid://0nwp3aymdf1l" path="res://scenes/car/Car.cs" id="1_yhfra"]
+[ext_resource type="Texture2D" uid="uid://b58vdbgetlct3" path="res://assets/car-Sheet.png" id="2_rytg7"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fyhmg"]
+radius = 71.0
+height = 256.0
+
+[sub_resource type="Animation" id="Animation_h2yge"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_1bvp3"]
+resource_name = "braking"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+
+[sub_resource type="Animation" id="Animation_lquwl"]
+resource_name = "normal"
+length = 0.43333334
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7mycd"]
+_data = {
+&"RESET": SubResource("Animation_h2yge"),
+&"braking": SubResource("Animation_1bvp3"),
+&"normal": SubResource("Animation_lquwl")
+}
+
+[node name="Car" type="CharacterBody2D" unique_id=439481678 node_paths=PackedStringArray("AnimPlayer")]
+script = ExtResource("1_yhfra")
+Drag = 0.0
+AnimPlayer = NodePath("AnimationPlayer")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2093751858]
+texture_filter = 1
+texture_repeat = 2
+texture = ExtResource("2_rytg7")
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2120611480]
+position = Vector2(-10, -31)
+shape = SubResource("CapsuleShape2D_fyhmg")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2100723465]
+position = Vector2(-11, -26)
+zoom = Vector2(0.7, 0.6)
+position_smoothing_enabled = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1106922128]
+libraries/ = SubResource("AnimationLibrary_7mycd")
