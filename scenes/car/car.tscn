@@ -82,3 +82,18 @@ position_smoothing_enabled = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1106922128]
 libraries/ = SubResource("AnimationLibrary_7mycd")
+
+[node name="ExhaustSpawn" type="Marker2D" parent="." unique_id=2123420229]
+position = Vector2(-47, 115)
+
+[node name="TireTrackSpawnLeft" type="Marker2D" parent="." unique_id=2016707712]
+position = Vector2(-62, 86)
+
+[node name="TireTrackSpawnRight" type="Marker2D" parent="." unique_id=1827877392]
+position = Vector2(47, 87)
+
+[node name="CarSmokeSpawnLeft" type="Marker2D" parent="." unique_id=109983918]
+position = Vector2(-81, 75)
+
+[node name="CarSmokeSpawnRight" type="Marker2D" parent="." unique_id=1765154108]
+position = Vector2(71, 77)

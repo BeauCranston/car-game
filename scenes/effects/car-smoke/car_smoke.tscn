@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bxslkkuu3f22j"]
+
+[ext_resource type="Texture2D" uid="uid://dypqosikiww8e" path="res://assets/car-smoke-Sheet.png" id="1_f0pph"]
+[ext_resource type="Script" uid="uid://dvkisvot7q81n" path="res://scenes/effects/car-smoke/CarSmoke.cs" id="2_lyk0y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_40j18"]
+atlas = ExtResource("1_f0pph")
+region = Rect2(0, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4mfi7"]
+atlas = ExtResource("1_f0pph")
+region = Rect2(80, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_677b0"]
+atlas = ExtResource("1_f0pph")
+region = Rect2(160, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t3gq3"]
+atlas = ExtResource("1_f0pph")
+region = Rect2(240, 0, 80, 80)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_tw4nv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_40j18")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4mfi7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_677b0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t3gq3")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="CarSmoke" type="AnimatedSprite2D" unique_id=1343883501]
+sprite_frames = SubResource("SpriteFrames_tw4nv")
+script = ExtResource("2_lyk0y")

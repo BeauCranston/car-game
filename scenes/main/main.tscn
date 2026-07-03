@@ -1,14 +1,27 @@
 [gd_scene format=3 uid="uid://burky1pdb7xqk"]
 
 [ext_resource type="Script" uid="uid://cimh80c4b4q8c" path="res://scenes/main/Main.cs" id="1_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://c6p5qa2emschj" path="res://scenes/road/road.tscn" id="2_l3cfh"]
 [ext_resource type="PackedScene" uid="uid://cmgcuypxcsry0" path="res://scenes/car/car.tscn" id="3_k2fmo"]
+[ext_resource type="PackedScene" uid="uid://0ordx412y522" path="res://scenes/effects/exhaust/exhaust-effect.tscn" id="4_l3cfh"]
+[ext_resource type="PackedScene" uid="uid://bxslkkuu3f22j" path="res://scenes/effects/car-smoke/car_smoke.tscn" id="4_ow5a4"]
+[ext_resource type="PackedScene" uid="uid://g2xao6p1104s" path="res://scenes/effects/tire-track/tire_track.tscn" id="5_hujxm"]
+[ext_resource type="PackedScene" uid="uid://bubsqtbh5g7xs" path="res://scenes/roadChunks/road_chunks.tscn" id="6_ow5a4"]
 
 [node name="Root" type="Node2D" unique_id=2055751553]
 script = ExtResource("1_1bvp3")
 
-[node name="RoadParalax" parent="." unique_id=530135758 instance=ExtResource("2_l3cfh")]
-scroll_offset = Vector2(-545, -745)
-
 [node name="Car" parent="." unique_id=439481678 instance=ExtResource("3_k2fmo")]
+z_index = 1
 position = Vector2(-1, -2)
+CarSmokeEffect = ExtResource("4_ow5a4")
+TireTrackEffect = ExtResource("5_hujxm")
+ExhaustEffect = ExtResource("4_l3cfh")
+EffectsParentPath = NodePath("../Effects")
+WheelBase = 240.0
+SteerAngle = 20.0
+
+[node name="Effects" type="Node2D" parent="." unique_id=1020033756]
+
+[node name="RoadChunks" parent="." unique_id=1626003694 node_paths=PackedStringArray("Car") instance=ExtResource("6_ow5a4")]
+z_index = -1
+Car = NodePath("../Car")

@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://g2xao6p1104s"]
+
+[ext_resource type="Texture2D" uid="uid://cmgxe3mmiinc0" path="res://assets/tire-mark.png" id="1_koll5"]
+[ext_resource type="Script" uid="uid://ccw8n7rs5c3ug" path="res://scenes/effects/tire-track/TireTrackEffect.cs" id="2_ddyne"]
+
+[node name="TireTrack" type="Sprite2D" unique_id=60536994]
+texture = ExtResource("1_koll5")
+script = ExtResource("2_ddyne")

@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://0ordx412y522"]
+
+[ext_resource type="Script" uid="uid://cuyerk8lp0q7o" path="res://scenes/effects/exhaust/ExhaustEffect.cs" id="1_7eylp"]
+[ext_resource type="Texture2D" uid="uid://db33t1fdoilxr" path="res://assets/car-gas-Sheet.png" id="1_b3q2v"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ifjp2"]
+atlas = ExtResource("1_b3q2v")
+region = Rect2(0, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g0if7"]
+atlas = ExtResource("1_b3q2v")
+region = Rect2(80, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uapjh"]
+atlas = ExtResource("1_b3q2v")
+region = Rect2(160, 0, 80, 80)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yyfjg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ifjp2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g0if7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uapjh")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" unique_id=318098981]
+sprite_frames = SubResource("SpriteFrames_yyfjg")
+frame = 2
+frame_progress = 0.6518248
+speed_scale = 0.8
+script = ExtResource("1_7eylp")

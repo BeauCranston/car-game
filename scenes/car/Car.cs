@@ -1,7 +1,45 @@
 using Godot;
 
+/// <summary>
+///  Car class that drives from a top down view. When the car goes forward it's Y position is negative, and when it goes backwards the Y position is positive
+/// </summary>
+/// <param name="parameterName">Parameter description.</param>
+/// <returns>Type and description of the returned object.</returns>
+/// <example>Write me later.</example>
 public partial class Car : CharacterBody2D
 {
+    [Export]
+    public PackedScene CarSmokeEffect;
+
+    [Export]
+    public PackedScene TireTrackEffect;
+
+    [Export]
+    public PackedScene ExhaustEffect;
+
+    [Export]
+    public NodePath EffectsParentPath;
+
+    [Export]
+    public float TireTrackEffectInterval = 0.2f;
+
+    [Export]
+    public float ExhaustEffectInterval = 0.15f;
+
+    [Export]
+    public float CarSmokeEffectInterval = 10f;
+
+    private float _tireTrackTimer = 0f;
+    private float _carSmokeTimer = 0f;
+    private float _exhaustTimer = 0f;
+
+    private Node2D _effectsParent;
+    private Marker2D _carSmokeSpawnLeft;
+    private Marker2D _carSmokeSpawnRight;
+    private Marker2D _exhaustSpawn;
+    private Marker2D _tireTrackSpawnLeft;
+    private Marker2D _tireTrackSpawnRight;
+
     [Signal]
     public delegate void VelocityChangedEventHandler(Vector2 speed);
 
@@ -24,7 +62,7 @@ public partial class Car : CharacterBody2D
     public float WheelBase = 100f;
 
     [Export]
-    public float SteerAngle = 25f;
+    public float SteerAngle = 15f;
 
     [Export]
     public float SlipSpeed = 400f;
@@ -41,16 +79,34 @@ public partial class Car : CharacterBody2D
     private Vector2 _acceleration = Vector2.Zero;
     private Vector2 Forward => -Transform.Y;
 
-    private float SteerDirection;
+    private float _speedChange = 0;
+
+    private float _steerDirection;
 
     public override void _Ready()
     {
+        ZIndex = 10;
+
         if (AnimPlayer == null)
         {
             GD.PrintErr("AnimationPlayer is not assigned in the Inspector!");
         }
 
         AnimPlayer.Play("normal");
+        _exhaustSpawn = GetNode<Marker2D>("ExhaustSpawn");
+        _carSmokeSpawnLeft = GetNode<Marker2D>("CarSmokeSpawnLeft");
+        _carSmokeSpawnRight = GetNode<Marker2D>("CarSmokeSpawnRight");
+        _tireTrackSpawnLeft = GetNode<Marker2D>("TireTrackSpawnLeft");
+        _tireTrackSpawnRight = GetNode<Marker2D>("TireTrackSpawnRight");
+        _effectsParent = GetNodeOrNull<Node2D>(EffectsParentPath);
+        _exhaustTimer = ExhaustEffectInterval;
+        _tireTrackTimer = TireTrackEffectInterval;
+        _carSmokeTimer = CarSmokeEffectInterval;
+
+        if (_effectsParent == null)
+        {
+            _effectsParent = GetTree().CurrentScene as Node2D;
+        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -63,6 +119,8 @@ public partial class Car : CharacterBody2D
         CalculateSteering(dt);
         MoveAndSlide();
         EmitSignal(SignalName.VelocityChanged, Velocity);
+        GD.Print(Velocity.Length());
+        // GD.Print(GlobalRotationDegrees);
     }
 
     private void ApplyFriction()
@@ -76,7 +134,7 @@ public partial class Car : CharacterBody2D
         _acceleration += dragForce + frictionForce;
     }
 
-    private void HandleInput(float dt)
+    private void HandleInput(float delta)
     {
         var turn = 0;
 
@@ -88,23 +146,69 @@ public partial class Car : CharacterBody2D
         {
             turn -= 1;
         }
-        SteerDirection = turn * Mathf.DegToRad(SteerAngle);
+        _steerDirection = turn * Mathf.DegToRad(SteerAngle);
         if (Input.IsActionPressed("accelerate"))
         {
             _acceleration = Forward * EnginePower;
+            SpawnCarExhaust(delta);
         }
         if (Input.IsActionPressed("brake"))
         {
             _acceleration = (Forward * BrakeForce);
             AnimPlayer.Play("braking");
+            SpawnTireTracks(delta);
         }
-        else
+        if (Input.IsActionJustReleased("brake"))
         {
             AnimPlayer.Play("normal");
         }
     }
 
-    private void CalculateSteering(float dt)
+    private void SpawnCarExhaust(float delta)
+    {
+        if (_exhaustTimer <= 0)
+        {
+            SpawnEffect(ExhaustEffect, _exhaustSpawn.GlobalPosition, GlobalRotation);
+            _exhaustTimer = ExhaustEffectInterval;
+        }
+        _exhaustTimer -= delta;
+    }
+
+    private void SpawnCarSmoke(float delta)
+    {
+        if (_carSmokeTimer <= 0)
+        {
+            SpawnEffect(CarSmokeEffect, _carSmokeSpawnLeft.GlobalPosition, GlobalRotation);
+            SpawnEffect(CarSmokeEffect, _carSmokeSpawnRight.GlobalPosition, GlobalRotation);
+            _carSmokeTimer = CarSmokeEffectInterval;
+        }
+        _carSmokeTimer -= delta;
+    }
+
+    private void SpawnTireTracks(float delta)
+    {
+        if (_tireTrackTimer <= 0)
+        {
+            SpawnEffect(TireTrackEffect, _tireTrackSpawnLeft.GlobalPosition, GlobalRotation);
+            SpawnEffect(TireTrackEffect, _tireTrackSpawnRight.GlobalPosition, GlobalRotation);
+            _tireTrackTimer = TireTrackEffectInterval;
+        }
+        _tireTrackTimer -= delta;
+    }
+
+    private void SpawnEffect(PackedScene scene, Vector2 position, float rotation)
+    {
+        if (scene == null)
+            return;
+
+        Node2D effect = scene.Instantiate<Node2D>();
+
+        effect.GlobalPosition = position;
+        effect.GlobalRotation = rotation;
+        _effectsParent.AddChild(effect);
+    }
+
+    private void CalculateSteering(float delta)
     {
         // Save the current speed BEFORE changing heading.
         var speedBeforeSteering = Velocity.Length();
@@ -119,10 +223,10 @@ public partial class Car : CharacterBody2D
         // Signed speed tells us whether we are moving forward or reverse.
         var signedSpeed = Velocity.Dot(forward);
 
-        rearWheel += forward * signedSpeed * dt;
+        rearWheel += forward * signedSpeed * delta;
 
         // Keep the negative sign if this fixed your mirrored steering.
-        frontWheel += forward.Rotated(SteerDirection) * signedSpeed * dt;
+        frontWheel += forward.Rotated(_steerDirection) * signedSpeed * delta;
 
         var newHeading = (frontWheel - rearWheel).Normalized();
 

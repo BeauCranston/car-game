@@ -22,3 +22,45 @@
 
 # 2026-06-24 00:30:52.270464
 +/ask what does delta represent in this file? I am working with godot
+
+# 2026-07-03 13:18:40.635785
++/ask I am trying to spawn 3 roads. I have a road scene at scenes/roadChunks/road.tscn. The road.tscn scene is just a single Sprite2D node with my background texture. I am trying to spawn an initial list of roads. One is directly under the car, the other is ahead of the car by the texture height, and one is behind by the texture height. When the game loads, the car is facing up which means it's going in the -Y direction. However when I load the game, it seems that none of the roads have spawned. Why is this?
+
+# 2026-07-03 13:18:44.557973
++y
+
+# 2026-07-03 14:16:30.919830
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/roadChunks/
+
+# 2026-07-03 14:16:31.924158
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-03 14:16:34.303336
++/add scenes/car/Car.cs
+
+# 2026-07-03 14:29:10.870257
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-03 14:29:11.628183
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-03 15:11:29.547918
++/ask I am getting an error that I cannot access a disposed value. This error happens in both of the the MoveChunksBack and Forward methods. Does RemoveFirst() dispose of the object? if so, what is the proper godot way of making sure I move the chunks from my linked list, and then free up the memory within the engine as well without accessing the disposed object
+
+# 2026-07-03 15:17:37.863607
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/roadChunks/
+
+# 2026-07-03 15:17:38.785834
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-03 15:30:18.324277
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-03 15:30:18.847410
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-03 15:33:00.788611
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/roadChunks/
+
+# 2026-07-03 15:33:01.734949
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/

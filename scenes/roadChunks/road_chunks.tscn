@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bubsqtbh5g7xs"]
+
+[ext_resource type="Script" uid="uid://cg30q0bhkh4p2" path="res://scenes/roadChunks/RoadManager.cs" id="1_dh858"]
+
+[node name="RoadChunks" type="Node2D" unique_id=1626003694]
+script = ExtResource("1_dh858")
