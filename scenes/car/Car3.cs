@@ -33,7 +33,7 @@ public partial class Car3 : RigidBody2D
     // public float SteerSpeed = 2.5f;
 
     [Export]
-    public float MaxSteerAngle = 0.5f;
+    public float MaxSteerAngle = 0.65f;
 
     [ExportSubgroup("Tire")]
     [Export]
@@ -199,6 +199,10 @@ public partial class Car3 : RigidBody2D
             NominalLoadOnTire,
             dt
         );
+
+        GD.Print($"Car's Rotation: {Rotation}");
+        GD.Print($"Cars Angular Velocity:{AngularVelocity}");
+        GD.Print($"Cars Linear Velocity:{LinearVelocity}");
     }
 
     private void ProcessWheel(
@@ -211,10 +215,12 @@ public partial class Car3 : RigidBody2D
         float dt
     )
     {
-        // 1. Orient wheel vectors natively (0 rad points UP -Y)
-        float totalAngle = GlobalRotation + steerAngle - (Mathf.Pi / 2f);
-        Vector2 wheelForward = Vector2.FromAngle(totalAngle);
+        // 1. FIXED: Natively derive wheel direction using car transforms
+        // GlobalTransform.Y is the car's forward axis (negative is up).
+        // We rotate it by the steering angle to get the exact world-space direction.
+        Vector2 wheelForward = (-GlobalTransform.Y).Rotated(steerAngle).Normalized();
 
+        GD.Print($"WheelForward: {wheelForward}");
         // 2. Manage free-rolling wheels
         if (driveTorque == 0f && brakeInput == 0f)
         {
@@ -232,7 +238,6 @@ public partial class Car3 : RigidBody2D
             float brakeDirection = -Mathf.Sign(wheelOmega);
             prospectiveAppliedBrakeTorque = brakeInput * _brakeTorque * brakeDirection;
 
-            // Calculate if this frame's torque will push rotation past zero
             Vector2 preVel = GetVelocityAtWheel(wheel);
             var preResult = TirePhysics.CalculateTireForces(
                 preVel,
@@ -249,7 +254,7 @@ public partial class Car3 : RigidBody2D
             if (Mathf.Sign(wheelOmega) != Mathf.Sign(wheelOmega + prospectiveDeltaOmega))
             {
                 wheelOmega = 0f;
-                isWheelLockedByBrakes = true; // Flag to skip manual torque integration later
+                isWheelLockedByBrakes = true;
             }
         }
 
@@ -263,11 +268,12 @@ public partial class Car3 : RigidBody2D
             fz
         );
 
-        // 5. CRITICAL FIX: Always pass forces to Godot's engine, even if wheel is locked!
+        // 5. Apply forces using the wheel's precise local coordinates relative to center of mass
         Vector2 pixelForce = result.forces * PixelsPerMeter;
-        ApplyForce(pixelForce, wheel.Position);
+        Vector2 globalWheelOffset = wheel.GlobalPosition - GlobalPosition;
+        ApplyForce(pixelForce, globalWheelOffset);
 
-        // If the wheel locked up this frame, stop here. The skidding force was already applied above.
+        // If locked, exit early
         if (isWheelLockedByBrakes || (brakeInput > 0f && Mathf.Abs(wheelOmega) <= 0.01f))
         {
             wheelOmega = 0f;
@@ -282,17 +288,18 @@ public partial class Car3 : RigidBody2D
         float angularAcceleration = totalTorque / WheelInertia;
 
         wheelOmega += angularAcceleration * dt;
-
-        // Prevent numeric explosion clamp
         wheelOmega = Mathf.Clamp(wheelOmega, -300f, 300f);
     }
 
     private Vector2 GetVelocityAtWheel(Marker2D wheelMarker)
     {
-        Vector2 localPos = wheelMarker.Position;
-        Vector2 tangentialVelocity = new Vector2(-localPos.Y, localPos.X) * AngularVelocity;
+        // Derive the true world-space offset relative to the car's origin
+        Vector2 globalOffset = wheelMarker.GlobalPosition - GlobalPosition;
 
-        //magic forumla expects meters per second so need to convert from pixel velocity to real velocity
+        // Calculate the tangential velocity correctly oriented in world space
+        Vector2 tangentialVelocity = new Vector2(-globalOffset.Y, globalOffset.X) * AngularVelocity;
+
+        // Combine world linear velocity with world tangential velocity, then scale down to meters
         return (LinearVelocity + tangentialVelocity) / PixelsPerMeter;
     }
 
