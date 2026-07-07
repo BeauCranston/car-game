@@ -8,66 +8,11 @@ using Godot;
 /// <example>Write me later.</example>
 public partial class Car3 : RigidBody2D
 {
-    [ExportGroup("Visuals & Chassis")]
-    [Export]
-    private Node2D _carVisual; // Assign the main car Sprite2D/Node2D here!
-
-    [Export]
-    private float _bodyRollStiffness = 0.05f; // Controls how stiff the suspension resists roll
-
-    [Export]
-    private float _bodyRollDamping = 0.15f; // Dampens body bounce vibrations
-
-    private float _currentBodyRollAngle = 0f;
-    private float _bodyRollVelocity = 0f;
-
-    // Variable to track longitudinal load shift for accurate spin-outs
-    private float _longitudinalWeightTransfer = 0f;
-
-    [Export]
-    public float PixelsPerMeter { get; set; } = 100f;
-
     [Export]
     public AnimationPlayer AnimPlayer { get; set; }
 
-    // [ExportGroup("Vehicle")]
     [Export]
-    public new float Mass = 1300f;
-
-    [ExportSubgroup("Steering")]
-    [Export]
-    public float MaxSteerAngle = 0.50f;
-
-    [ExportSubgroup("Tire")]
-    [Export]
-    public float TireRadius = 0.34f;
-
-    [Export]
-    public float WheelInertia = 3f;
-
-    // [Export]
-    // public float WheelAngularDrag = 0.5f;
-
-    // [ExportGroup("Game Feel")]
-    // [Export]
-    // public float LateralGrip = 8f;
-
-    // [Export]
-    // public float RollingResistance = 0.99f;
-
-    // [Export]
-    // public float MaxSpeedPixels = 1200f;
-
-    private float _gravity = 9.81f;
-
-    private float Weight
-    {
-        get => Mass * _gravity;
-    }
-    private float NominalLoadOnTire
-    {
-        get => Weight / 4;
-    }
+    private float PixelsPerMeter { get; set; } = 100f;
 
     [ExportGroup("WheelPositions")]
     [Export]
@@ -82,45 +27,99 @@ public partial class Car3 : RigidBody2D
     [Export]
     private Marker2D _rearRightWheel;
 
+    [ExportGroup("Vehicle")]
+    [ExportSubgroup("Visuals & Chassis")]
+    [Export]
+    private Node2D CarSprite; // Assign the main car Sprite2D/Node2D here!
+
+    [Export]
+    private float BodyRollStiffness = 0.05f; // Controls how stiff the suspension resists roll
+
+    [Export]
+    private float BodyRollDamping = 0.15f; // Dampens body bounce vibrations
+
+    [Export]
+    private float CenterOfMassHeight = 0.4f; // Estimated height of car's CG in meters
+
+    [Export]
+    public new float Mass = 1398f;
+
+    [ExportSubgroup("Braking")]
+    [Export]
+    private float BrakeTorque = 1500f; // Max braking power
+
+    [ExportSubgroup("Steering")]
+    [Export]
+    private float MaxSteerAngle = 0.50f;
+
+    [ExportSubgroup("Tire")]
+    [Export]
+    private float TireRadius = 0.33f;
+
+    [Export]
+    private float WheelInertia = 3f;
+
     private float Wheelbase =>
         Mathf.Abs(_frontLeftWheel.Position.Y - _rearLeftWheel.Position.Y) / PixelsPerMeter;
+
     private float TrackWidth =>
         Mathf.Abs(_frontLeftWheel.Position.X - _frontRightWheel.Position.X) / PixelsPerMeter;
-    private float CenterOfMassHeight = 0.4f; // Estimated height of car's CG in meters
+
     private Vector2 _previousLinearVelocity = Vector2.Zero;
 
-    private float _wheelAngularVelocity = 0;
-    private float _wheelRadius = 30f;
-    private float _slipDenominatorLowerBoundary = 0.5f;
-
-    private float _wheelSlipLowerBoundary = -1;
-    private float _wheelSlipUpperBoundary = 1;
-
-    // private float WheelSurfaceSpeed
-    // {
-    //     get => _wheelRadius * _wheelAngularVelocity;
-    // }
+    private float _gravity = 9.81f;
+    private float Weight
+    {
+        get => Mass * _gravity;
+    }
+    private float NominalLoadOnTire
+    {
+        get => Weight / 4;
+    }
 
     private float VerticalLoadOnTire { get; set; }
-
-    [Signal]
-    public delegate void VelocityChangedEventHandler(Vector2 speed);
 
     private Gear _gear = Gear.Forward;
     private int GearDirection => _gear == Gear.Forward ? 1 : -1;
 
-    [ExportGroup("Vehicle")]
+    [ExportGroup("Power Train")]
+    [ExportSubgroup("Engine")]
     [Export]
-    private float _maxEngineTorque = 300f; // Newton-meters
+    private float MaxEngineTorque = 233f; // Newton-meters
 
     [Export]
-    private float _gearRatio = 3.5f; // Current gear ratio
+    private float IdleRPM { get; set; } = 1000f;
 
     [Export]
-    private float _finalDriveRatio = 4.1f; // Differential ratio
+    private const float RevLimitHoldTime = 0.15f;
 
     [Export]
-    private float _brakeTorque = 1500f; // Max braking power
+    private float RedlineRPM { get; set; } = 7000f;
+
+    [ExportSubgroup("Transmission")]
+    [Export]
+    private float _finalDriveRatio = 4.06f; // Differential ratio
+
+    [Export]
+    private float FirstGear = 3.538f; // 1: 1st Gear
+
+    [Export]
+    private float SecondGear = 2.047f; // 2: 2nd Gear
+
+    [Export]
+    private float ThirdGear = 1.375f; // 3: 3rd Gear
+
+    [Export]
+    private float FourthGear = 1.025f; // 4: 4th Gear (Increased from 1.12)
+
+    [Export]
+    private float FifthGear = 0.875f; // 5: 5th Gear (Increased from 0.85)
+
+    [Export]
+    private float SixthGear = 0.733f; // 6: 6th Gear (Increased from 0.68)
+
+    [Export]
+    private float ReverseGear = -3.55f; // 7: Reverse Gear
 
     // Track the independent angular velocities (rad/s) of each wheel
     private float _omegaFL,
@@ -145,30 +144,34 @@ public partial class Car3 : RigidBody2D
         // _rearRightWheel = GetNode<Marker2D>("TireBackRight");
     }
 
-    [ExportGroup("Powertrain")]
-    [Export]
-    public float IdleRPM { get; set; } = 1000f;
-
-    [Export]
-    public float RedlineRPM { get; set; } = 7000f;
-
     // Gear ratios for a typical 6-speed close-ratio transmission + Reverse
-    private float[] _gearRatios = new float[]
+    private float[] _gearRatios
     {
-        0.0f, // 0: Neutral
-        3.82f, // 1: 1st Gear
-        2.15f, // 2: 2nd Gear
-        1.48f, // 3: 3rd Gear
-        1.12f, // 4: 4th Gear
-        0.85f, // 5: 5th Gear
-        0.68f, // 6: 6th Gear
-        -3.55f, // 7: Reverse Gear
-    };
+        get
+        {
+            return new float[]
+            {
+                0.0f, // 0: Neutral
+                FirstGear,
+                SecondGear,
+                ThirdGear,
+                FourthGear,
+                FifthGear,
+                SixthGear,
+                ReverseGear,
+            };
+        }
+    }
 
     private int _currentGearIndex = 1; // Start in 1st gear
-    public float EngineRPM { get; private set; } = 1000f;
+    private float EngineRPM { get; set; } = 1000f;
     private float _revLimiterTimer = 0f;
-    private const float REV_LIMIT_HOLD_TIME = 0.15f;
+
+    private float _currentBodyRollAngle = 0f;
+    private float _bodyRollVelocity = 0f;
+
+    // Variable to track longitudinal load shift for accurate spin-outs
+    private float _longitudinalWeightTransfer = 0f;
 
     private float GetEngineTorqueAtRPM(float rpm, float throttle, float dt)
     {
@@ -184,26 +187,34 @@ public partial class Car3 : RigidBody2D
 
         if (rpm >= RedlineRPM)
         {
-            _revLimiterTimer = REV_LIMIT_HOLD_TIME; // Activate the hold timer
+            _revLimiterTimer = RevLimitHoldTime; // Activate the hold timer
             return -50f;
         }
 
-        // 2. SMOOTH REALISTIC TORQUE CURVE
-        // Standard passenger and sports cars produce a broad "plateau" of torque.
-        // This polynomial curve gives the engine strong power at low RPMs so high gears don't stall.
+        // 2. FIXED: FLAT SPORTS CAR POWER PLATEAU
         float normalizedRPM = (rpm - IdleRPM) / (RedlineRPM - IdleRPM);
 
-        // Peak torque sits comfortably between 3500 and 5500 RPM, but stays strong at low RPM
-        float torqueFactor =
-            0.7f
-            + 0.3f * Mathf.Sin(normalizedRPM * Mathf.Pi)
-            - (0.5f * normalizedRPM * normalizedRPM);
-        torqueFactor = Mathf.Clamp(torqueFactor, 0.4f, 1.0f); // Ensure there is always baseline power
+        // This profile guarantees that from 2500 RPM up to 6000 RPM, the engine
+        // maintains a flat 95% to 100% of its maximum torque capacity.
+        float torqueFactor = 1.0f;
 
-        float combustionTorque = _maxEngineTorque * torqueFactor * throttle;
+        if (rpm < 3000f)
+        {
+            // Smoothly climb from 80% power at idle up to 100% at 3000 RPM
+            float lowEndScale = (rpm - IdleRPM) / (3000f - IdleRPM);
+            torqueFactor = Mathf.Lerp(0.80f, 1.0f, lowEndScale);
+        }
+        else if (rpm > 5500f)
+        {
+            // Smoothly taper off power slightly near the redline to simulate natural engine breath limits
+            float highEndScale = (rpm - 5500f) / (RedlineRPM - 5500f);
+            torqueFactor = Mathf.Lerp(1.0f, 0.85f, highEndScale);
+        }
+
+        float combustionTorque = MaxEngineTorque * torqueFactor * throttle;
 
         // 3. ENGINE FRICTION
-        float engineFriction = 30f + (70f * normalizedRPM);
+        float engineFriction = 5f + (15f * normalizedRPM);
 
         return combustionTorque - engineFriction;
     }
@@ -391,15 +402,15 @@ public partial class Car3 : RigidBody2D
         );
 
         // 7. Physics-Based Visual Chassis Roll Matrix
-        if (_carVisual != null)
+        if (CarSprite != null)
         {
             float targetForce = -lateralAcceleration * 0.002f;
-            float springForce = (targetForce - _currentBodyRollAngle) * _bodyRollStiffness;
-            _bodyRollVelocity += springForce - (_bodyRollVelocity * _bodyRollDamping);
+            float springForce = (targetForce - _currentBodyRollAngle) * BodyRollStiffness;
+            _bodyRollVelocity += springForce - (_bodyRollVelocity * BodyRollDamping);
             _currentBodyRollAngle += _bodyRollVelocity;
 
-            _carVisual.Rotation = _currentBodyRollAngle;
-            _carVisual.Skew = -longitudinalAcceleration * 0.001f;
+            CarSprite.Rotation = _currentBodyRollAngle;
+            CarSprite.Skew = -longitudinalAcceleration * 0.001f;
         }
         GD.Print($"EngineRPM: {EngineRPM}");
     }
@@ -434,7 +445,7 @@ public partial class Car3 : RigidBody2D
         if (brakeInput > 0f && Mathf.Abs(wheelOmega) > 0.01f)
         {
             float brakeDirection = -Mathf.Sign(wheelOmega);
-            prospectiveAppliedBrakeTorque = brakeInput * _brakeTorque * brakeDirection;
+            prospectiveAppliedBrakeTorque = brakeInput * BrakeTorque * brakeDirection;
 
             Vector2 preVel = GetVelocityAtWheel(wheel);
             var preResult = TirePhysics.CalculateTireForces(

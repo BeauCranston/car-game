@@ -4,13 +4,13 @@ using Godot;
 public static class TirePhysics
 {
     // Typical empirical coefficients for a standard passenger tire
-    public static float B_long = 7.0f;
+    public static float B_long = 10.0f;
     public static float C_long = 1.65f;
-    public static float E_long = 0.7f;
+    public static float E_long = 0.97f;
 
-    public static float B_lat = 12.0f;
+    public static float B_lat = 7.0f;
     public static float C_lat = 1.30f;
-    public static float E_lat = -2.33f;
+    public static float E_lat = -0.73f;
 
     /// <summary>
     /// Calculates the normalized Magic Formula coefficient (returns a factor between -1.0 and 1.0)
@@ -52,6 +52,14 @@ public static class TirePhysics
 
         // 2. Calculate Pure Lateral Force (Fy)
         float slipAngle = Mathf.Atan2(vy, Mathf.Abs(safeVx));
+
+        // FIXED: Add a micro-deadzone for straight-line driving (approx. less than 0.15 degrees of slip)
+        // This prevents high-speed calculation jitter from generating phantom cornering drag
+        if (Mathf.Abs(slipAngle) < 0.0025f)
+        {
+            slipAngle = 0f;
+        }
+
         float D_lat = verticalLoad * frictionCoefficient;
         float fyMag = D_lat * PacejkaFormula(slipAngle, B_lat, C_lat, E_lat);
 
