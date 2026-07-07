@@ -8,6 +8,22 @@ using Godot;
 /// <example>Write me later.</example>
 public partial class Car3 : RigidBody2D
 {
+    [ExportGroup("Visuals & Chassis")]
+    [Export]
+    private Node2D _carVisual; // Assign the main car Sprite2D/Node2D here!
+
+    [Export]
+    private float _bodyRollStiffness = 0.05f; // Controls how stiff the suspension resists roll
+
+    [Export]
+    private float _bodyRollDamping = 0.15f; // Dampens body bounce vibrations
+
+    private float _currentBodyRollAngle = 0f;
+    private float _bodyRollVelocity = 0f;
+
+    // Variable to track longitudinal load shift for accurate spin-outs
+    private float _longitudinalWeightTransfer = 0f;
+
     [Export]
     public float PixelsPerMeter { get; set; } = 100f;
 
@@ -79,6 +95,13 @@ public partial class Car3 : RigidBody2D
     [Export]
     private Marker2D _rearRightWheel;
 
+    private float Wheelbase =>
+        Mathf.Abs(_frontLeftWheel.Position.Y - _rearLeftWheel.Position.Y) / PixelsPerMeter;
+    private float TrackWidth =>
+        Mathf.Abs(_frontLeftWheel.Position.X - _frontRightWheel.Position.X) / PixelsPerMeter;
+    private float CenterOfMassHeight = 0.5f; // Estimated height of car's CG in meters
+    private Vector2 _previousLinearVelocity = Vector2.Zero;
+
     private float _wheelAngularVelocity = 0;
     private float _wheelRadius = 30f;
     private float _slipDenominatorLowerBoundary = 0.5f;
@@ -139,55 +162,108 @@ public partial class Car3 : RigidBody2D
     {
         float dt = (float)delta;
 
-        Vector2 forward = -Transform.Y;
-        Vector2 right = Transform.X;
-
-        // 1. Apply user input as torque to the wheel.
+        // 1. Process Core Inputs
         float throttle = Input.IsActionPressed("accelerate") ? 1f : 0f;
         float brake = Input.IsActionPressed("brake") ? 1f : 0f;
         float steerInput =
             (Input.IsActionPressed("steer_right") ? 1f : 0f)
             - (Input.IsActionPressed("steer_left") ? 1f : 0f);
-        _steeringAngle = steerInput * MaxSteerAngle;
 
-        // 2. Calculate Drivetrain Torques
-        // Total torque multiplier through transmission
-        float driveTorque = throttle * _maxEngineTorque * _gearRatio * _finalDriveRatio;
+        float targetSteerAngle = steerInput * MaxSteerAngle;
 
-        // Split torque across the drive wheels (Rear-Wheel Drive layout used here)
+        // 2. Ackerman Steering Calculations
+        float steerLeft = 0f;
+        float steerRight = 0f;
+
+        if (Mathf.Abs(targetSteerAngle) > 0.001f)
+        {
+            float radius = Wheelbase / Mathf.Tan(Mathf.Abs(targetSteerAngle));
+            if (targetSteerAngle > 0f) // Right turn
+            {
+                steerRight =
+                    Mathf.Atan(Wheelbase / (radius - (TrackWidth / 2f)))
+                    * Mathf.Sign(targetSteerAngle);
+                steerLeft =
+                    Mathf.Atan(Wheelbase / (radius + (TrackWidth / 2f)))
+                    * Mathf.Sign(targetSteerAngle);
+            }
+            else // Left turn
+            {
+                steerLeft =
+                    Mathf.Atan(Wheelbase / (radius - (TrackWidth / 2f)))
+                    * Mathf.Sign(targetSteerAngle);
+                steerRight =
+                    Mathf.Atan(Wheelbase / (radius + (TrackWidth / 2f)))
+                    * Mathf.Sign(targetSteerAngle);
+            }
+        }
+
+        // 3. True 2D Acceleration & Force Extraction
+        Vector2 currentVelocityMps = LinearVelocity / PixelsPerMeter;
+        Vector2 accelerationMps = (currentVelocityMps - _previousLinearVelocity) / dt;
+        _previousLinearVelocity = currentVelocityMps;
+
+        // Convert acceleration vectors into the car's local grid space
+        Vector2 localAccel = accelerationMps.Rotated(-GlobalRotation);
+        float lateralAcceleration = localAccel.X;
+        float longitudinalAcceleration = localAccel.Y;
+
+        // 4. Dynamic Weight Transfer (Lateral + Longitudinal Matrix)
+        float lateralWeightTransfer =
+            (Mass * lateralAcceleration * CenterOfMassHeight) / TrackWidth;
+        _longitudinalWeightTransfer =
+            (Mass * longitudinalAcceleration * CenterOfMassHeight) / Wheelbase;
+
+        // Safely clamp transfer matrices to protect against calculation explosion
+        lateralWeightTransfer = Mathf.Clamp(
+            lateralWeightTransfer,
+            -NominalLoadOnTire * 1.5f,
+            NominalLoadOnTire * 1.5f
+        );
+        _longitudinalWeightTransfer = Mathf.Clamp(
+            _longitudinalWeightTransfer,
+            -NominalLoadOnTire * 1.5f,
+            NominalLoadOnTire * 1.5f
+        );
+
+        // Calculate four-corner dynamic tire load mapping
+        // Accelerating shifts weight backward (subtracts from front, adds to rear)
+        float fzFL =
+            NominalLoadOnTire - (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f);
+        float fzFR =
+            NominalLoadOnTire + (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f);
+        float fzRL =
+            NominalLoadOnTire - (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f);
+        float fzRR =
+            NominalLoadOnTire + (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f);
+
+        // Guard wheels against dropping below minimum contact load (0 Newtons)
+        fzFL = Mathf.Max(10f, fzFL);
+        fzFR = Mathf.Max(10f, fzFR);
+        fzRL = Mathf.Max(10f, fzRL);
+        fzRR = Mathf.Max(10f, fzRR);
+
+        // 5. Motor Calculations
+        // Calculate Drivetrain Torques
+        float driveTorque =
+            throttle * _maxEngineTorque * _gearRatio * _finalDriveRatio * GearDirection;
         float driveTorquePerWheel = driveTorque / 2f;
 
-        // 3. Calculate Static Vertical Load (Per-wheel allocation of vehicle weight)
-        // GD.Print(
-        //     $"throttle:{throttle}, driveTorque:{driveTorque}, totalWeight:${Weight}, loadOnTire:{NominalLoadOnTire}"
-        // );
+        // ADD BRAKE BIAS: Send 65% of braking power to the front, 35% to the rear
+        // Or lower the front bias slightly if the front wheels still lock up too easily
+        float frontBrakeInput = brake * 0.60f;
+        float rearBrakeInput = brake * 0.40f;
 
-        // 4. Process Each Wheel Individually
-        ProcessWheel(
-            _frontLeftWheel,
-            ref _omegaFL,
-            _steeringAngle,
-            0f,
-            brake,
-            NominalLoadOnTire,
-            dt
-        );
-        ProcessWheel(
-            _frontRightWheel,
-            ref _omegaFR,
-            _steeringAngle,
-            0f,
-            brake,
-            NominalLoadOnTire,
-            dt
-        );
+        // Execute Wheel Simulation Framework with biased brake forces
+        ProcessWheel(_frontLeftWheel, ref _omegaFL, steerLeft, 0f, frontBrakeInput, fzFL, dt);
+        ProcessWheel(_frontRightWheel, ref _omegaFR, steerRight, 0f, frontBrakeInput, fzFR, dt);
         ProcessWheel(
             _rearLeftWheel,
             ref _omegaRL,
             0f,
             driveTorquePerWheel,
-            brake,
-            NominalLoadOnTire,
+            rearBrakeInput,
+            fzRL,
             dt
         );
         ProcessWheel(
@@ -195,14 +271,27 @@ public partial class Car3 : RigidBody2D
             ref _omegaRR,
             0f,
             driveTorquePerWheel,
-            brake,
-            NominalLoadOnTire,
+            rearBrakeInput,
+            fzRR,
             dt
         );
+        // 7. PHYSICS-BASED CHASSIS VISUAL BODY ROLL
+        if (_carVisual != null)
+        {
+            // Spring Hooke's Law equation: Accel = (-Stiffness * Position) - (Damping * Velocity)
+            // Driven by real-world lateral G forces (lateralAcceleration)
+            float targetForce = -lateralAcceleration * 0.002f;
+            float springForce = (targetForce - _currentBodyRollAngle) * _bodyRollStiffness;
+            _bodyRollVelocity += springForce - (_bodyRollVelocity * _bodyRollDamping);
+            _currentBodyRollAngle += _bodyRollVelocity;
 
-        GD.Print($"Car's Rotation: {Rotation}");
-        GD.Print($"Cars Angular Velocity:{AngularVelocity}");
-        GD.Print($"Cars Linear Velocity:{LinearVelocity}");
+            // Apply visual physics transforms to the car sprite layer
+            _carVisual.Rotation = _currentBodyRollAngle;
+
+            // Dynamic pitch compression: backend drops down on throttle, front drops on brakes
+            float pitchOffset = -longitudinalAcceleration * 0.001f;
+            _carVisual.Skew = pitchOffset;
+        }
     }
 
     private void ProcessWheel(

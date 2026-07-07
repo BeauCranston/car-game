@@ -60,11 +60,12 @@ _data = {
 &"normal": SubResource("Animation_lquwl")
 }
 
-[node name="Car" type="RigidBody2D" unique_id=1806853704 node_paths=PackedStringArray("AnimPlayer", "_frontLeftWheel", "_frontRightWheel", "_rearLeftWheel", "_rearRightWheel")]
+[node name="Car" type="RigidBody2D" unique_id=1806853704 node_paths=PackedStringArray("_carVisual", "AnimPlayer", "_frontLeftWheel", "_frontRightWheel", "_rearLeftWheel", "_rearRightWheel")]
 mass = 1000.0
 gravity_scale = 0.0
 can_sleep = false
 script = ExtResource("1_yhfra")
+_carVisual = NodePath("Sprite2D")
 AnimPlayer = NodePath("AnimationPlayer")
 _frontLeftWheel = NodePath("TireFrontLeft")
 _frontRightWheel = NodePath("TireFrontRight")
