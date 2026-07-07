@@ -65,13 +65,13 @@ public partial class Car : CharacterBody2D
     public float SteerAngle = 15f;
 
     [Export]
-    public float SlipSpeed = 400f;
+    public float SlipSpeed = 200f;
 
     [Export]
-    public float TractionFast = 0.5f;
+    public float TractionFast = 0.03f;
 
     [Export]
-    public float TractionSlow = 1.0f;
+    public float TractionSlow = 0.7f;
 
     [Export]
     public AnimationPlayer AnimPlayer { get; set; }
@@ -80,6 +80,7 @@ public partial class Car : CharacterBody2D
     private Vector2 Forward => -Transform.Y;
 
     private float _speedChange = 0;
+    private float _currentSpeed = 0;
 
     private float _steerDirection;
 
@@ -115,12 +116,22 @@ public partial class Car : CharacterBody2D
         _acceleration = Vector2.Zero;
         HandleInput(dt);
         ApplyFriction();
+        _currentSpeed = Velocity.Length();
+        GD.Print("Velocity before adjustment: ", Velocity.Length());
         Velocity += _acceleration * dt;
+        _speedChange = GetSpeedChange(dt, _currentSpeed, Velocity.Length());
+        GD.Print("Speed Change:", _speedChange);
+        SpawnTireTracks(dt);
         CalculateSteering(dt);
         MoveAndSlide();
         EmitSignal(SignalName.VelocityChanged, Velocity);
-        GD.Print(Velocity.Length());
+        GD.Print("Velocity:", Velocity.Length());
         // GD.Print(GlobalRotationDegrees);
+    }
+
+    private float GetSpeedChange(float delta, float currentSpeed, float newSpeed)
+    {
+        return Mathf.Abs(newSpeed) - Mathf.Abs(currentSpeed);
     }
 
     private void ApplyFriction()
@@ -156,7 +167,6 @@ public partial class Car : CharacterBody2D
         {
             _acceleration = (Forward * BrakeForce);
             AnimPlayer.Play("braking");
-            SpawnTireTracks(delta);
         }
         if (Input.IsActionJustReleased("brake"))
         {
@@ -187,7 +197,7 @@ public partial class Car : CharacterBody2D
 
     private void SpawnTireTracks(float delta)
     {
-        if (_tireTrackTimer <= 0)
+        if (_speedChange < -15)
         {
             SpawnEffect(TireTrackEffect, _tireTrackSpawnLeft.GlobalPosition, GlobalRotation);
             SpawnEffect(TireTrackEffect, _tireTrackSpawnRight.GlobalPosition, GlobalRotation);
