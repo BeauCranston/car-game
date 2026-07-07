@@ -2,19 +2,15 @@
 
 [ext_resource type="Script" uid="uid://cimh80c4b4q8c" path="res://scenes/main/Main.cs" id="1_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://cmgcuypxcsry0" path="res://scenes/car/car.tscn" id="3_k2fmo"]
-[ext_resource type="Script" uid="uid://cbugn6vvxlpvt" path="res://scenes/car/Car2.cs" id="3_l3cfh"]
 [ext_resource type="PackedScene" uid="uid://bubsqtbh5g7xs" path="res://scenes/roadChunks/road_chunks.tscn" id="6_ow5a4"]
 
 [node name="Root" type="Node2D" unique_id=2055751553]
 script = ExtResource("1_1bvp3")
-
-[node name="Car" parent="." unique_id=439481678 instance=ExtResource("3_k2fmo")]
-z_index = 1
-position = Vector2(-1, -2)
-script = ExtResource("3_l3cfh")
 
 [node name="Effects" type="Node2D" parent="." unique_id=1020033756]
 
 [node name="RoadChunks" parent="." unique_id=1626003694 node_paths=PackedStringArray("Car") instance=ExtResource("6_ow5a4")]
 z_index = -1
 Car = NodePath("../Car")
+
+[node name="Car" parent="." unique_id=1806853704 instance=ExtResource("3_k2fmo")]

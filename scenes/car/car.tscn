@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cmgcuypxcsry0"]
 
+[ext_resource type="Script" uid="uid://dp25eg1xfci47" path="res://scenes/car/Car3.cs" id="1_yhfra"]
 [ext_resource type="Texture2D" uid="uid://b58vdbgetlct3" path="res://assets/car-Sheet.png" id="2_rytg7"]
-[ext_resource type="Script" uid="uid://cbugn6vvxlpvt" path="res://scenes/car/Car2.cs" id="3_rytg7"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fyhmg"]
 radius = 71.0
@@ -60,9 +60,16 @@ _data = {
 &"normal": SubResource("Animation_lquwl")
 }
 
-[node name="Car" type="CharacterBody2D" unique_id=439481678 node_paths=PackedStringArray("AnimPlayer")]
-script = ExtResource("3_rytg7")
+[node name="Car" type="RigidBody2D" unique_id=1806853704 node_paths=PackedStringArray("AnimPlayer", "_frontLeftWheel", "_frontRightWheel", "_rearLeftWheel", "_rearRightWheel")]
+mass = 1000.0
+gravity_scale = 0.0
+can_sleep = false
+script = ExtResource("1_yhfra")
 AnimPlayer = NodePath("AnimationPlayer")
+_frontLeftWheel = NodePath("TireFrontLeft")
+_frontRightWheel = NodePath("TireFrontRight")
+_rearLeftWheel = NodePath("TireBackLeft")
+_rearRightWheel = NodePath("TireBackRight")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2093751858]
 texture_filter = 1
@@ -71,7 +78,7 @@ texture = ExtResource("2_rytg7")
 hframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2120611480]
-position = Vector2(-10, -31)
+position = Vector2(-5, -29)
 shape = SubResource("CapsuleShape2D_fyhmg")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2100723465]
@@ -96,3 +103,15 @@ position = Vector2(-81, 75)
 
 [node name="CarSmokeSpawnRight" type="Marker2D" parent="." unique_id=1765154108]
 position = Vector2(71, 77)
+
+[node name="TireFrontLeft" type="Marker2D" parent="." unique_id=627702652]
+position = Vector2(-71, -110)
+
+[node name="TireFrontRight" type="Marker2D" parent="." unique_id=1839584667]
+position = Vector2(61, -110)
+
+[node name="TireBackLeft" type="Marker2D" parent="." unique_id=503178500]
+position = Vector2(-71, 68)
+
+[node name="TireBackRight" type="Marker2D" parent="." unique_id=784460081]
+position = Vector2(61, 68)
