@@ -32,31 +32,18 @@ public partial class Car3 : RigidBody2D
 
     // [ExportGroup("Vehicle")]
     [Export]
-    public float Mass = 1500f;
+    public new float Mass = 1300f;
 
-    //
-    // [Export]
-    // public float EngineTorque = 9000f;
-    //
-    // [Export]
-    // public float BrakeTorque = 12000f;
-    //
-    // [Export]
-    // public float MaxSpeed = 900f;
-    //
     [ExportSubgroup("Steering")]
-    // [Export]
-    // public float SteerSpeed = 2.5f;
-
     [Export]
-    public float MaxSteerAngle = 0.65f;
+    public float MaxSteerAngle = 0.50f;
 
     [ExportSubgroup("Tire")]
     [Export]
     public float TireRadius = 0.34f;
 
     [Export]
-    public float WheelInertia = 1.2f;
+    public float WheelInertia = 3f;
 
     // [Export]
     // public float WheelAngularDrag = 0.5f;
@@ -99,7 +86,7 @@ public partial class Car3 : RigidBody2D
         Mathf.Abs(_frontLeftWheel.Position.Y - _rearLeftWheel.Position.Y) / PixelsPerMeter;
     private float TrackWidth =>
         Mathf.Abs(_frontLeftWheel.Position.X - _frontRightWheel.Position.X) / PixelsPerMeter;
-    private float CenterOfMassHeight = 0.5f; // Estimated height of car's CG in meters
+    private float CenterOfMassHeight = 0.4f; // Estimated height of car's CG in meters
     private Vector2 _previousLinearVelocity = Vector2.Zero;
 
     private float _wheelAngularVelocity = 0;
@@ -158,11 +145,111 @@ public partial class Car3 : RigidBody2D
         // _rearRightWheel = GetNode<Marker2D>("TireBackRight");
     }
 
+    [ExportGroup("Powertrain")]
+    [Export]
+    public float IdleRPM { get; set; } = 1000f;
+
+    [Export]
+    public float RedlineRPM { get; set; } = 7000f;
+
+    // Gear ratios for a typical 6-speed close-ratio transmission + Reverse
+    private float[] _gearRatios = new float[]
+    {
+        0.0f, // 0: Neutral
+        3.82f, // 1: 1st Gear
+        2.15f, // 2: 2nd Gear
+        1.48f, // 3: 3rd Gear
+        1.12f, // 4: 4th Gear
+        0.85f, // 5: 5th Gear
+        0.68f, // 6: 6th Gear
+        -3.55f, // 7: Reverse Gear
+    };
+
+    private int _currentGearIndex = 1; // Start in 1st gear
+    public float EngineRPM { get; private set; } = 1000f;
+    private float _revLimiterTimer = 0f;
+    private const float REV_LIMIT_HOLD_TIME = 0.15f;
+
+    private float GetEngineTorqueAtRPM(float rpm, float throttle, float dt)
+    {
+        if (rpm < IdleRPM)
+            rpm = IdleRPM;
+
+        // 1. STABLE REV LIMITER (Ignition/Fuel Cut)
+        if (_revLimiterTimer > 0f)
+        {
+            _revLimiterTimer -= dt;
+            return -50f; // Soft internal engine friction during the spark cut
+        }
+
+        if (rpm >= RedlineRPM)
+        {
+            _revLimiterTimer = REV_LIMIT_HOLD_TIME; // Activate the hold timer
+            return -50f;
+        }
+
+        // 2. SMOOTH REALISTIC TORQUE CURVE
+        // Standard passenger and sports cars produce a broad "plateau" of torque.
+        // This polynomial curve gives the engine strong power at low RPMs so high gears don't stall.
+        float normalizedRPM = (rpm - IdleRPM) / (RedlineRPM - IdleRPM);
+
+        // Peak torque sits comfortably between 3500 and 5500 RPM, but stays strong at low RPM
+        float torqueFactor =
+            0.7f
+            + 0.3f * Mathf.Sin(normalizedRPM * Mathf.Pi)
+            - (0.5f * normalizedRPM * normalizedRPM);
+        torqueFactor = Mathf.Clamp(torqueFactor, 0.4f, 1.0f); // Ensure there is always baseline power
+
+        float combustionTorque = _maxEngineTorque * torqueFactor * throttle;
+
+        // 3. ENGINE FRICTION
+        float engineFriction = 30f + (70f * normalizedRPM);
+
+        return combustionTorque - engineFriction;
+    }
+
+    private void UpdateGearInput()
+    {
+        // Shift Up (1 -> 6, can't shift past 6)
+        // Index 7 is Reverse, so if we are in Neutral (0) we shift to 1st (1)
+        if (Input.IsActionJustPressed("shift_up"))
+        {
+            if (_currentGearIndex == 7) // From Reverse to Neutral
+                _currentGearIndex = 0;
+            else if (_currentGearIndex < 6) // Normal sequential upshift
+                _currentGearIndex++;
+
+            GD.Print($"Shifted UP to Gear: {GetGearName()}");
+        }
+
+        // Shift Down (6 -> 1 -> Neutral -> Reverse)
+        if (Input.IsActionJustPressed("shift_down"))
+        {
+            if (_currentGearIndex == 0) // From Neutral to Reverse
+                _currentGearIndex = 7;
+            else if (_currentGearIndex > 0 && _currentGearIndex <= 6) // Normal downshift
+                _currentGearIndex--;
+
+            GD.Print($"Shifted DOWN to Gear: {GetGearName()}");
+        }
+    }
+
+    private string GetGearName()
+    {
+        if (_currentGearIndex == 0)
+            return "Neutral";
+        if (_currentGearIndex == 7)
+            return "Reverse";
+        return $"{_currentGearIndex}";
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         float dt = (float)delta;
 
-        // 1. Process Core Inputs
+        // 1. Process shifting inputs first
+        UpdateGearInput();
+
         float throttle = Input.IsActionPressed("accelerate") ? 1f : 0f;
         float brake = Input.IsActionPressed("brake") ? 1f : 0f;
         float steerInput =
@@ -171,14 +258,13 @@ public partial class Car3 : RigidBody2D
 
         float targetSteerAngle = steerInput * MaxSteerAngle;
 
-        // 2. Ackerman Steering Calculations
+        // 2. Ackerman Steering Architecture
         float steerLeft = 0f;
         float steerRight = 0f;
-
         if (Mathf.Abs(targetSteerAngle) > 0.001f)
         {
             float radius = Wheelbase / Mathf.Tan(Mathf.Abs(targetSteerAngle));
-            if (targetSteerAngle > 0f) // Right turn
+            if (targetSteerAngle > 0f)
             {
                 steerRight =
                     Mathf.Atan(Wheelbase / (radius - (TrackWidth / 2f)))
@@ -187,7 +273,7 @@ public partial class Car3 : RigidBody2D
                     Mathf.Atan(Wheelbase / (radius + (TrackWidth / 2f)))
                     * Mathf.Sign(targetSteerAngle);
             }
-            else // Left turn
+            else
             {
                 steerLeft =
                     Mathf.Atan(Wheelbase / (radius - (TrackWidth / 2f)))
@@ -198,23 +284,20 @@ public partial class Car3 : RigidBody2D
             }
         }
 
-        // 3. True 2D Acceleration & Force Extraction
+        // 3. Dynamic Weight Transfer Systems
         Vector2 currentVelocityMps = LinearVelocity / PixelsPerMeter;
         Vector2 accelerationMps = (currentVelocityMps - _previousLinearVelocity) / dt;
         _previousLinearVelocity = currentVelocityMps;
 
-        // Convert acceleration vectors into the car's local grid space
         Vector2 localAccel = accelerationMps.Rotated(-GlobalRotation);
         float lateralAcceleration = localAccel.X;
         float longitudinalAcceleration = localAccel.Y;
 
-        // 4. Dynamic Weight Transfer (Lateral + Longitudinal Matrix)
         float lateralWeightTransfer =
             (Mass * lateralAcceleration * CenterOfMassHeight) / TrackWidth;
         _longitudinalWeightTransfer =
             (Mass * longitudinalAcceleration * CenterOfMassHeight) / Wheelbase;
 
-        // Safely clamp transfer matrices to protect against calculation explosion
         lateralWeightTransfer = Mathf.Clamp(
             lateralWeightTransfer,
             -NominalLoadOnTire * 1.5f,
@@ -226,35 +309,66 @@ public partial class Car3 : RigidBody2D
             NominalLoadOnTire * 1.5f
         );
 
-        // Calculate four-corner dynamic tire load mapping
-        // Accelerating shifts weight backward (subtracts from front, adds to rear)
-        float fzFL =
-            NominalLoadOnTire - (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f);
-        float fzFR =
-            NominalLoadOnTire + (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f);
-        float fzRL =
-            NominalLoadOnTire - (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f);
-        float fzRR =
-            NominalLoadOnTire + (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f);
+        float fzFL = Mathf.Max(
+            10f,
+            NominalLoadOnTire - (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f)
+        );
+        float fzFR = Mathf.Max(
+            10f,
+            NominalLoadOnTire + (lateralWeightTransfer / 2f) - (_longitudinalWeightTransfer / 2f)
+        );
+        float fzRL = Mathf.Max(
+            10f,
+            NominalLoadOnTire - (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f)
+        );
+        float fzRR = Mathf.Max(
+            10f,
+            NominalLoadOnTire + (lateralWeightTransfer / 2f) + (_longitudinalWeightTransfer / 2f)
+        );
 
-        // Guard wheels against dropping below minimum contact load (0 Newtons)
-        fzFL = Mathf.Max(10f, fzFL);
-        fzFR = Mathf.Max(10f, fzFR);
-        fzRL = Mathf.Max(10f, fzRL);
-        fzRR = Mathf.Max(10f, fzRR);
+        // 4. MOTOR DYNAMICS & BI-DIRECTIONAL RPM MATRIX
+        float currentGearRatio = _gearRatios[_currentGearIndex];
+        float driveTorquePerWheel = 0f;
 
-        // 5. Motor Calculations
-        // Calculate Drivetrain Torques
-        float driveTorque =
-            throttle * _maxEngineTorque * _gearRatio * _finalDriveRatio * GearDirection;
-        float driveTorquePerWheel = driveTorque / 2f;
+        if (_currentGearIndex == 0) // NEUTRAL: Wheels disconnected from engine
+        {
+            // Engine relaxes back toward standard idle or revs freely up to redline on throttle
+            float targetRPM = throttle > 0.1f ? RedlineRPM : IdleRPM;
+            EngineRPM = Mathf.MoveToward(EngineRPM, targetRPM, 4000f * dt);
+            driveTorquePerWheel = 0f;
+        }
+        else // IN GEAR: Connect wheels directly back to calculate authentic engine speed
+        {
+            float averageRearWheelOmega = (_omegaRL + _omegaRR) / 2f;
 
-        // ADD BRAKE BIAS: Send 65% of braking power to the front, 35% to the rear
-        // Or lower the front bias slightly if the front wheels still lock up too easily
+            // 1. Calculate raw target RPM from wheel speed
+            float calculatedEngineRPM = Mathf.Abs(
+                averageRearWheelOmega
+                    * currentGearRatio
+                    * _finalDriveRatio
+                    * (60f / (2f * Mathf.Pi))
+            );
+
+            // 2. FIXED: Smoothly interpolate the RPM instead of jumping instantly.
+            // A smoothing factor of 15.0f lets the engine react quickly but filters out frame-by-frame spikes.
+            EngineRPM = Mathf.Lerp(EngineRPM, calculatedEngineRPM, 15.0f * dt);
+
+            // 3. Clamp the engine RPM between legal operational bounds
+            EngineRPM = Mathf.Clamp(EngineRPM, IdleRPM, RedlineRPM);
+
+            // 4. Derive true variable torque force from the engine's RPM curve
+            float currentEngineTorque = GetEngineTorqueAtRPM(EngineRPM, throttle, dt);
+
+            // 5. Calculate drive axle torque and send it down to the wheels
+            float totalDriveTorque =
+                throttle * currentEngineTorque * currentGearRatio * _finalDriveRatio;
+            driveTorquePerWheel = totalDriveTorque / 2f;
+        }
+        // 5. Split Brake Input safely
         float frontBrakeInput = brake * 0.60f;
         float rearBrakeInput = brake * 0.40f;
 
-        // Execute Wheel Simulation Framework with biased brake forces
+        // 6. Execute Wheel Simulation Pipelines
         ProcessWheel(_frontLeftWheel, ref _omegaFL, steerLeft, 0f, frontBrakeInput, fzFL, dt);
         ProcessWheel(_frontRightWheel, ref _omegaFR, steerRight, 0f, frontBrakeInput, fzFR, dt);
         ProcessWheel(
@@ -275,23 +389,19 @@ public partial class Car3 : RigidBody2D
             fzRR,
             dt
         );
-        // 7. PHYSICS-BASED CHASSIS VISUAL BODY ROLL
+
+        // 7. Physics-Based Visual Chassis Roll Matrix
         if (_carVisual != null)
         {
-            // Spring Hooke's Law equation: Accel = (-Stiffness * Position) - (Damping * Velocity)
-            // Driven by real-world lateral G forces (lateralAcceleration)
             float targetForce = -lateralAcceleration * 0.002f;
             float springForce = (targetForce - _currentBodyRollAngle) * _bodyRollStiffness;
             _bodyRollVelocity += springForce - (_bodyRollVelocity * _bodyRollDamping);
             _currentBodyRollAngle += _bodyRollVelocity;
 
-            // Apply visual physics transforms to the car sprite layer
             _carVisual.Rotation = _currentBodyRollAngle;
-
-            // Dynamic pitch compression: backend drops down on throttle, front drops on brakes
-            float pitchOffset = -longitudinalAcceleration * 0.001f;
-            _carVisual.Skew = pitchOffset;
+            _carVisual.Skew = -longitudinalAcceleration * 0.001f;
         }
+        GD.Print($"EngineRPM: {EngineRPM}");
     }
 
     private void ProcessWheel(
@@ -309,7 +419,6 @@ public partial class Car3 : RigidBody2D
         // We rotate it by the steering angle to get the exact world-space direction.
         Vector2 wheelForward = (-GlobalTransform.Y).Rotated(steerAngle).Normalized();
 
-        GD.Print($"WheelForward: {wheelForward}");
         // 2. Manage free-rolling wheels
         if (driveTorque == 0f && brakeInput == 0f)
         {

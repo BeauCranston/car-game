@@ -4,9 +4,9 @@ using Godot;
 public static class TirePhysics
 {
     // Typical empirical coefficients for a standard passenger tire
-    public static float B_long = 10.0f;
+    public static float B_long = 7.0f;
     public static float C_long = 1.65f;
-    public static float E_long = 0.97f;
+    public static float E_long = 0.7f;
 
     public static float B_lat = 12.0f;
     public static float C_lat = 1.30f;

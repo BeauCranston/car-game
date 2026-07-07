@@ -70,3 +70,39 @@
 
 # 2026-07-07 12:11:21.271229
 +/map-refresh
+
+# 2026-07-07 12:12:04.078451
++/add scenes/car/CARPHYSICS.MD
+
+# 2026-07-07 12:12:34.193576
++please convert this into an md formatted file but keep all of the text. do not modify any text, i only want formatting done with proper use of headings and spacing
+
+# 2026-07-07 12:13:53.935248
++N
+
+# 2026-07-07 12:14:03.244052
++/add scenes/car/CARPHYSICS.MD
+
+# 2026-07-07 12:14:07.376010
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 12:14:09.396392
++/add scenes/car/CARPHYSICS.md
+
+# 2026-07-07 12:14:09.414511
++/drop scenes/car/CARPHYSICS.MD
+
+# 2026-07-07 12:16:34.000555
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 12:16:35.223897
++/add scenes/car/Car.cs
+
+# 2026-07-07 12:16:47.862947
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 12:16:48.919297
++/add scenes/car/Car2.cs
+
+# 2026-07-07 12:16:54.176560
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
