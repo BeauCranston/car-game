@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dp25eg1xfci47" path="res://scenes/car/Car3.cs" id="1_yhfra"]
 [ext_resource type="Texture2D" uid="uid://b58vdbgetlct3" path="res://assets/car-Sheet.png" id="2_rytg7"]
+[ext_resource type="PackedScene" uid="uid://bnej6a6s8nemp" path="res://scenes/car/wheel/wheel.tscn" id="3_rytg7"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fyhmg"]
 radius = 71.0
@@ -60,17 +61,17 @@ _data = {
 &"normal": SubResource("Animation_lquwl")
 }
 
-[node name="Car" type="RigidBody2D" unique_id=1806853704 node_paths=PackedStringArray("_carVisual", "AnimPlayer", "_frontLeftWheel", "_frontRightWheel", "_rearLeftWheel", "_rearRightWheel")]
+[node name="Car" type="RigidBody2D" unique_id=1806853704 node_paths=PackedStringArray("AnimPlayer", "_frontLeftWheel", "_frontRightWheel", "_rearLeftWheel", "_rearRightWheel", "CarSprite")]
 mass = 1000.0
 gravity_scale = 0.0
 can_sleep = false
 script = ExtResource("1_yhfra")
-_carVisual = NodePath("Sprite2D")
 AnimPlayer = NodePath("AnimationPlayer")
 _frontLeftWheel = NodePath("TireFrontLeft")
 _frontRightWheel = NodePath("TireFrontRight")
 _rearLeftWheel = NodePath("TireBackLeft")
 _rearRightWheel = NodePath("TireBackRight")
+CarSprite = NodePath("Sprite2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2093751858]
 texture_filter = 1
@@ -105,14 +106,14 @@ position = Vector2(-81, 75)
 [node name="CarSmokeSpawnRight" type="Marker2D" parent="." unique_id=1765154108]
 position = Vector2(71, 77)
 
-[node name="TireFrontLeft" type="Marker2D" parent="." unique_id=627702652]
+[node name="TireFrontLeft" parent="." unique_id=1879409597 instance=ExtResource("3_rytg7")]
 position = Vector2(-71, -110)
 
-[node name="TireFrontRight" type="Marker2D" parent="." unique_id=1839584667]
+[node name="TireFrontRight" parent="." unique_id=1260317173 instance=ExtResource("3_rytg7")]
 position = Vector2(61, -110)
 
-[node name="TireBackLeft" type="Marker2D" parent="." unique_id=503178500]
+[node name="TireBackLeft" parent="." unique_id=787016170 instance=ExtResource("3_rytg7")]
 position = Vector2(-71, 68)
 
-[node name="TireBackRight" type="Marker2D" parent="." unique_id=784460081]
+[node name="TireBackRight" parent="." unique_id=1259383684 instance=ExtResource("3_rytg7")]
 position = Vector2(61, 68)

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bnej6a6s8nemp"]
+
+[ext_resource type="Script" uid="uid://b7nxd3m6ayqhk" path="res://scenes/car/wheel/Wheel.cs" id="1_erp7m"]
+
+[node name="wheel" type="Marker2D" unique_id=1879409597]
+script = ExtResource("1_erp7m")

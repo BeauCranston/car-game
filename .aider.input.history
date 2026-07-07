@@ -109,3 +109,114 @@
 
 # 2026-07-07 14:48:15.803135
 +/reset
+
+# 2026-07-07 14:48:44.705228
++/add scenes/car/Car3.cs
+
+# 2026-07-07 14:49:24.397484
++/ask I would like to split this car class up into a car's main components such as transmission, engine, chassis, etc. How would you cleanly split this car class up over multiple classes?
+
+# 2026-07-07 14:55:25.100601
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 14:58:13.547779
++/ask what would go in the wheel class
+
+# 2026-07-07 15:03:05.927930
++/ask wouldn't we want wheel to inherit from Marker2D so that in the inspector we can attach wheels to a car and we don't have to separately create a marker2D to pass into wheel?
+
+# 2026-07-07 15:05:08.247409
++/ask shouldn't `PixelsPerMeter` be a global setting that an class can access? What is the best way to create global settings in godot?
+
+# 2026-07-07 15:11:15.212217
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:11:19.636711
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-07 15:11:20.192993
++/drop oil:///home/beau/coding/personal/games/godot/car-game/
+
+# 2026-07-07 15:11:22.350248
++/add GlobalSettings.cs
+
+# 2026-07-07 15:13:22.202467
++/drop oil:///home/beau/coding/personal/games/godot/car-game/
+
+# 2026-07-07 15:15:58.677725
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:15:59.710953
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-07 15:15:59.999703
++/drop oil:///home/beau/coding/personal/games/godot/car-game/
+
+# 2026-07-07 15:16:12.554192
++/add GameSettings.cs
+
+# 2026-07-07 15:16:12.582281
++/drop GlobalSettings.cs
+
+# 2026-07-07 15:16:19.850769
++/add GameSettings.cs.uid
+
+# 2026-07-07 15:18:07.873344
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:18:10.276813
++/add scenes/car/Wheel.cs
+
+# 2026-07-07 15:18:58.018357
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:33:55.600361
++/add scenes/car/wheel/Wheel.cs
+
+# 2026-07-07 15:34:06.089569
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-07 15:34:06.736701
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:35:57.115915
++/ask I plan on making the wheel into a scene so that I can just create wheel nodes. Does this make sense to do in godot or should they just remain marker2d nodes with scripts
+
+# 2026-07-07 15:45:08.331707
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-07 15:45:09.574369
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 15:45:11.122555
++/add scenes/car/Car3.cs
+
+# 2026-07-07 16:01:47.002117
++/ask how would I separate out the engine class from Car3 
+
+# 2026-07-07 16:14:52.741376
++/ask /drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 16:14:54.236256
++/add scenes/car/Engine.cs
+
+# 2026-07-07 16:15:22.822941
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 16:16:25.041969
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-07 16:16:42.190971
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 16:28:52.861585
++/add scenes/car/Engine2.cs
+
+# 2026-07-07 16:28:52.898200
++/drop scenes/car/Engine.cs
+
+# 2026-07-07 16:28:57.724098
++/add scenes/car/Engine.cs
+
+# 2026-07-07 16:29:18.403151
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/

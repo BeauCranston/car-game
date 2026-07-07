@@ -15,6 +15,10 @@ run/main_scene="uid://burky1pdb7xqk"
 config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameSettings="*uid://cnubf0xoeuors"
+
 [display]
 
 window/size/viewport_width=1280

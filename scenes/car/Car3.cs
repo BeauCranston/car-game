@@ -11,21 +11,18 @@ public partial class Car3 : RigidBody2D
     [Export]
     public AnimationPlayer AnimPlayer { get; set; }
 
-    [Export]
-    private float PixelsPerMeter { get; set; } = 100f;
-
     [ExportGroup("WheelPositions")]
     [Export]
-    private Marker2D _frontLeftWheel;
+    private Wheel _frontLeftWheel;
 
     [Export]
-    private Marker2D _frontRightWheel;
+    private Wheel _frontRightWheel;
 
     [Export]
-    private Marker2D _rearLeftWheel;
+    private Wheel _rearLeftWheel;
 
     [Export]
-    private Marker2D _rearRightWheel;
+    private Wheel _rearRightWheel;
 
     [ExportGroup("Vehicle")]
     [ExportSubgroup("Visuals & Chassis")]
@@ -52,25 +49,26 @@ public partial class Car3 : RigidBody2D
     [Export]
     private float MaxSteerAngle = 0.50f;
 
-    [ExportSubgroup("Tire")]
-    [Export]
-    private float TireRadius = 0.33f;
-
-    [Export]
-    private float WheelInertia = 3f;
+    // [ExportSubgroup("Tire")]
+    // [Export]
+    // private float TireRadius = 0.33f;
+    //
+    // [Export]
+    // private float WheelInertia = 3f;
 
     private float Wheelbase =>
-        Mathf.Abs(_frontLeftWheel.Position.Y - _rearLeftWheel.Position.Y) / PixelsPerMeter;
+        Mathf.Abs(_frontLeftWheel.Position.Y - _rearLeftWheel.Position.Y)
+        / GameSettings.Instance.PixelsPerMeter;
 
     private float TrackWidth =>
-        Mathf.Abs(_frontLeftWheel.Position.X - _frontRightWheel.Position.X) / PixelsPerMeter;
+        Mathf.Abs(_frontLeftWheel.Position.X - _frontRightWheel.Position.X)
+        / GameSettings.Instance.PixelsPerMeter;
 
     private Vector2 _previousLinearVelocity = Vector2.Zero;
 
-    private float _gravity = 9.81f;
     private float Weight
     {
-        get => Mass * _gravity;
+        get => Mass * GameSettings.Instance.Gravity;
     }
     private float NominalLoadOnTire
     {
@@ -90,7 +88,6 @@ public partial class Car3 : RigidBody2D
     [Export]
     private float IdleRPM { get; set; } = 1000f;
 
-    [Export]
     private const float RevLimitHoldTime = 0.15f;
 
     [Export]
@@ -121,11 +118,11 @@ public partial class Car3 : RigidBody2D
     [Export]
     private float ReverseGear = -3.55f; // 7: Reverse Gear
 
-    // Track the independent angular velocities (rad/s) of each wheel
-    private float _omegaFL,
-        _omegaFR,
-        _omegaRL,
-        _omegaRR;
+    // // Track the independent angular velocities (rad/s) of each wheel
+    // private float _omegaFL,
+    //     _omegaFR,
+    //     _omegaRL,
+    //     _omegaRR;
     private float _steeringAngle = 0f;
 
     public override void _Ready()
@@ -296,7 +293,7 @@ public partial class Car3 : RigidBody2D
         }
 
         // 3. Dynamic Weight Transfer Systems
-        Vector2 currentVelocityMps = LinearVelocity / PixelsPerMeter;
+        Vector2 currentVelocityMps = LinearVelocity / GameSettings.Instance.PixelsPerMeter;
         Vector2 accelerationMps = (currentVelocityMps - _previousLinearVelocity) / dt;
         _previousLinearVelocity = currentVelocityMps;
 
@@ -350,7 +347,7 @@ public partial class Car3 : RigidBody2D
         }
         else // IN GEAR: Connect wheels directly back to calculate authentic engine speed
         {
-            float averageRearWheelOmega = (_omegaRL + _omegaRR) / 2f;
+            float averageRearWheelOmega = (_rearLeftWheel.Omega + _rearRightWheel.Omega) / 2f;
 
             // 1. Calculate raw target RPM from wheel speed
             float calculatedEngineRPM = Mathf.Abs(
@@ -379,26 +376,24 @@ public partial class Car3 : RigidBody2D
         float frontBrakeInput = brake * 0.60f;
         float rearBrakeInput = brake * 0.40f;
 
-        // 6. Execute Wheel Simulation Pipelines
-        ProcessWheel(_frontLeftWheel, ref _omegaFL, steerLeft, 0f, frontBrakeInput, fzFL, dt);
-        ProcessWheel(_frontRightWheel, ref _omegaFR, steerRight, 0f, frontBrakeInput, fzFR, dt);
-        ProcessWheel(
-            _rearLeftWheel,
-            ref _omegaRL,
+        // // 6. Execute Wheel Simulation Pipelines
+        _frontLeftWheel.UpdatePhysics(dt, steerLeft, 0f, BrakeTorque, frontBrakeInput, fzFL);
+        _frontRightWheel.UpdatePhysics(dt, steerRight, 0f, BrakeTorque, frontBrakeInput, fzFR);
+        _rearLeftWheel.UpdatePhysics(
+            dt,
             0f,
             driveTorquePerWheel,
+            BrakeTorque,
             rearBrakeInput,
-            fzRL,
-            dt
+            fzRL
         );
-        ProcessWheel(
-            _rearRightWheel,
-            ref _omegaRR,
+        _rearRightWheel.UpdatePhysics(
+            dt,
             0f,
             driveTorquePerWheel,
+            BrakeTorque,
             rearBrakeInput,
-            fzRR,
-            dt
+            fzRR
         );
 
         // 7. Physics-Based Visual Chassis Roll Matrix
@@ -413,103 +408,6 @@ public partial class Car3 : RigidBody2D
             CarSprite.Skew = -longitudinalAcceleration * 0.001f;
         }
         GD.Print($"EngineRPM: {EngineRPM}");
-    }
-
-    private void ProcessWheel(
-        Marker2D wheel,
-        ref float wheelOmega,
-        float steerAngle,
-        float driveTorque,
-        float brakeInput,
-        float fz,
-        float dt
-    )
-    {
-        // 1. FIXED: Natively derive wheel direction using car transforms
-        // GlobalTransform.Y is the car's forward axis (negative is up).
-        // We rotate it by the steering angle to get the exact world-space direction.
-        Vector2 wheelForward = (-GlobalTransform.Y).Rotated(steerAngle).Normalized();
-
-        // 2. Manage free-rolling wheels
-        if (driveTorque == 0f && brakeInput == 0f)
-        {
-            Vector2 wVel = GetVelocityAtWheel(wheel);
-            float groundSpeed = wVel.Dot(wheelForward);
-            wheelOmega = groundSpeed / TireRadius;
-        }
-
-        // 3. Handle Prospective Braking Lockup
-        float prospectiveAppliedBrakeTorque = 0f;
-        bool isWheelLockedByBrakes = false;
-
-        if (brakeInput > 0f && Mathf.Abs(wheelOmega) > 0.01f)
-        {
-            float brakeDirection = -Mathf.Sign(wheelOmega);
-            prospectiveAppliedBrakeTorque = brakeInput * BrakeTorque * brakeDirection;
-
-            Vector2 preVel = GetVelocityAtWheel(wheel);
-            var preResult = TirePhysics.CalculateTireForces(
-                preVel,
-                wheelForward,
-                wheelOmega,
-                TireRadius,
-                fz
-            );
-            float preFeedback = preResult.forces.Dot(wheelForward) * TireRadius;
-
-            float netTorque = driveTorque - preFeedback + prospectiveAppliedBrakeTorque;
-            float prospectiveDeltaOmega = (netTorque / WheelInertia) * dt;
-
-            if (Mathf.Sign(wheelOmega) != Mathf.Sign(wheelOmega + prospectiveDeltaOmega))
-            {
-                wheelOmega = 0f;
-                isWheelLockedByBrakes = true;
-            }
-        }
-
-        // 4. Gather true ground velocity & calculate final tire forces
-        Vector2 wheelVelocity = GetVelocityAtWheel(wheel);
-        var result = TirePhysics.CalculateTireForces(
-            wheelVelocity,
-            wheelForward,
-            wheelOmega,
-            TireRadius,
-            fz
-        );
-
-        // 5. Apply forces using the wheel's precise local coordinates relative to center of mass
-        Vector2 pixelForce = result.forces * PixelsPerMeter;
-        Vector2 globalWheelOffset = wheel.GlobalPosition - GlobalPosition;
-        ApplyForce(pixelForce, globalWheelOffset);
-
-        // If locked, exit early
-        if (isWheelLockedByBrakes || (brakeInput > 0f && Mathf.Abs(wheelOmega) <= 0.01f))
-        {
-            wheelOmega = 0f;
-            return;
-        }
-
-        // 6. Normal Wheel Rotational Physics Integration
-        float fxTire = result.forces.Dot(wheelForward);
-        float tireFeedbackTorque = fxTire * TireRadius;
-
-        float totalTorque = driveTorque - tireFeedbackTorque + prospectiveAppliedBrakeTorque;
-        float angularAcceleration = totalTorque / WheelInertia;
-
-        wheelOmega += angularAcceleration * dt;
-        wheelOmega = Mathf.Clamp(wheelOmega, -300f, 300f);
-    }
-
-    private Vector2 GetVelocityAtWheel(Marker2D wheelMarker)
-    {
-        // Derive the true world-space offset relative to the car's origin
-        Vector2 globalOffset = wheelMarker.GlobalPosition - GlobalPosition;
-
-        // Calculate the tangential velocity correctly oriented in world space
-        Vector2 tangentialVelocity = new Vector2(-globalOffset.Y, globalOffset.X) * AngularVelocity;
-
-        // Combine world linear velocity with world tangential velocity, then scale down to meters
-        return (LinearVelocity + tangentialVelocity) / PixelsPerMeter;
     }
 
     private void UpdateGear()
