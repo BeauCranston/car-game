@@ -25,25 +25,11 @@ public partial class Wheel : Marker2D
     [Export]
     public float MaximumWheelAngularVelocity { get; set; } = 300f;
 
-    [Export]
-    public float LowSpeedTireModelThreshold { get; set; } = 1.5f;
-
-    [Export]
-    public float LowSpeedLongitudinalDamping { get; set; } = 1200f;
-
-    [Export]
-    public float LowSpeedLateralDamping { get; set; } = 8000f;
-
-    [Export]
-    public float WheelSleepSpeed { get; set; } = 0.25f;
-
-    [Export]
-    public float WheelSleepAngularSpeed { get; set; } = 0.5f;
-
     [ExportGroup("Debug")]
     [Export]
     public bool DebugTireTelemetry { get; set; } = true;
 
+    [Export]
     public float DebugPrintIntervalSeconds { get; set; } = 1.0f;
 
     private Timer _debugPrintTimer;
@@ -64,7 +50,6 @@ public partial class Wheel : Marker2D
 
     private const float AmbientTemp = 25.0f;
     private const float BaseCoolingRate = 0.1f;
-    private const float RestSpeedThreshold = 0.02f;
     private const float RestOmegaThreshold = 0.02f;
     private const float TinyValue = 0.0001f;
 
@@ -85,6 +70,7 @@ public partial class Wheel : Marker2D
             float lateralSpeed,
             float wheelSurfaceSpeed,
             float longitudinalSlipSpeed,
+            float speedReference,
             float slipRatio,
             float slipAngle,
             float longitudinalForce,
@@ -99,6 +85,7 @@ public partial class Wheel : Marker2D
             LateralSpeed = lateralSpeed;
             WheelSurfaceSpeed = wheelSurfaceSpeed;
             LongitudinalSlipSpeed = longitudinalSlipSpeed;
+            SpeedReference = speedReference;
             SlipRatio = slipRatio;
             SlipAngle = slipAngle;
             LongitudinalForce = longitudinalForce;
@@ -113,6 +100,7 @@ public partial class Wheel : Marker2D
         public float LateralSpeed { get; }
         public float WheelSurfaceSpeed { get; }
         public float LongitudinalSlipSpeed { get; }
+        public float SpeedReference { get; }
         public float SlipRatio { get; }
         public float SlipAngle { get; }
         public float LongitudinalForce { get; }
@@ -133,6 +121,7 @@ public partial class Wheel : Marker2D
             float lateralSpeed,
             float wheelSurfaceSpeed,
             float longitudinalSlipSpeed,
+            float speedReference,
             float slipRatio,
             float slipAngle,
             float wheelAngularVelocity
@@ -145,6 +134,7 @@ public partial class Wheel : Marker2D
             LateralSpeed = lateralSpeed;
             WheelSurfaceSpeed = wheelSurfaceSpeed;
             LongitudinalSlipSpeed = longitudinalSlipSpeed;
+            SpeedReference = speedReference;
             SlipRatio = slipRatio;
             SlipAngle = slipAngle;
             WheelAngularVelocity = wheelAngularVelocity;
@@ -157,6 +147,7 @@ public partial class Wheel : Marker2D
         public float LateralSpeed { get; }
         public float WheelSurfaceSpeed { get; }
         public float LongitudinalSlipSpeed { get; }
+        public float SpeedReference { get; }
         public float SlipRatio { get; }
         public float SlipAngle { get; }
         public float WheelAngularVelocity { get; }
@@ -176,6 +167,7 @@ public partial class Wheel : Marker2D
                 + $"vx:{t.ForwardSpeed:0.00}, vy:{t.LateralSpeed:0.00}, "
                 + $"wheelSurfaceSpeed:{t.WheelSurfaceSpeed:0.00}, "
                 + $"longitudinalSlipSpeed:{t.LongitudinalSlipSpeed:0.00}, "
+                + $"speedReference:{t.SpeedReference:0.00}, "
                 + $"slipRatio:{t.SlipRatio:0.000}, slipAngle:{t.SlipAngle:0.000}, "
                 + $"fx:{t.LongitudinalForce:0.00}, fy:{t.LateralForce:0.00}, "
                 + $"sampledOmega:{t.SampledOmega:0.00}, omega:{t.Omega:0.00}, "
@@ -208,6 +200,7 @@ public partial class Wheel : Marker2D
         }
 
         SetupDebugTimer();
+
         if (TireSmokeScene == null)
         {
             return;
@@ -259,25 +252,6 @@ public partial class Wheel : Marker2D
         Vector2 wheelForward = (-_carBody.GlobalTransform.Y).Rotated(steerAngle).Normalized();
         Vector2 wheelRight = new Vector2(-wheelForward.Y, wheelForward.X);
         Vector2 wheelVelocity = GetVelocityAtWheel();
-        float forwardSpeedForSleep = wheelVelocity.Dot(wheelForward);
-        float lateralSpeedForSleep = wheelVelocity.Dot(wheelRight);
-
-        bool noDrive = Mathf.Abs(driveTorque) < TinyValue;
-        bool noBrake = brakeInput < TinyValue;
-        bool nearlyStopped =
-            Mathf.Abs(forwardSpeedForSleep) < WheelSleepSpeed
-            && Mathf.Abs(lateralSpeedForSleep) < WheelSleepSpeed
-            && Mathf.Abs(Omega) < WheelSleepAngularSpeed;
-
-        if (noDrive && noBrake && nearlyStopped)
-        {
-            Omega = forwardSpeedForSleep / TireRadius;
-            _smoothedFrictionWatts = 0f;
-        }
-        if (ShouldSnapWheelToRest(wheelVelocity, driveTorque, brakeInput))
-        {
-            Omega = 0f;
-        }
 
         TireContactPatchState contactPatch = CalculateTireContactPatch(
             wheelVelocity,
@@ -302,7 +276,8 @@ public partial class Wheel : Marker2D
             driveTorque,
             brakeTorque,
             brakeInput,
-            contactPatch.LongitudinalForce
+            contactPatch.LongitudinalForce,
+            contactPatch.ForwardSpeed
         );
 
         if (DebugTireTelemetry)
@@ -312,6 +287,7 @@ public partial class Wheel : Marker2D
                 contactPatch.LateralSpeed,
                 contactPatch.WheelSurfaceSpeed,
                 contactPatch.LongitudinalSlipSpeed,
+                contactPatch.SpeedReference,
                 contactPatch.SlipRatio,
                 contactPatch.SlipAngle,
                 contactPatch.LongitudinalForce,
@@ -332,16 +308,6 @@ public partial class Wheel : Marker2D
 
         return (_carBody.LinearVelocity + tangentialVelocity)
             / GameSettings.Instance.PixelsPerMeter;
-    }
-
-    private bool ShouldSnapWheelToRest(Vector2 wheelVelocity, float driveTorque, float brakeInput)
-    {
-        bool wheelIsNearlyStopped = Mathf.Abs(Omega) < RestOmegaThreshold;
-        bool contactPatchIsNearlyStopped = wheelVelocity.Length() < RestSpeedThreshold;
-        bool noDriveTorque = Mathf.Abs(driveTorque) < TinyValue;
-        bool noBrakeInput = brakeInput < TinyValue;
-
-        return wheelIsNearlyStopped && contactPatchIsNearlyStopped && noDriveTorque && noBrakeInput;
     }
 
     /// <summary>
@@ -371,48 +337,42 @@ public partial class Wheel : Marker2D
         float wheelSurfaceSpeed = SnapToZero(wheelAngularVelocity * tireRadius);
         float longitudinalSlipSpeed = SnapToZero(wheelSurfaceSpeed - forwardSpeed);
 
-        float slipDenominator = Mathf.Max(
-            Mathf.Max(Mathf.Abs(forwardSpeed), Mathf.Abs(wheelSurfaceSpeed)),
-            MinimumSlipSpeed
+        float speedReference = Mathf.Sqrt(
+            (forwardSpeed * forwardSpeed)
+                + (wheelSurfaceSpeed * wheelSurfaceSpeed)
+                + (MinimumSlipSpeed * MinimumSlipSpeed)
         );
-        float slipRatio = SnapToZero(longitudinalSlipSpeed / slipDenominator);
-        float slipAngle = SnapToZero(Mathf.Atan2(lateralSpeed, slipDenominator));
+
+        speedReference = CleanNumber(speedReference);
+
+        if (speedReference <= TinyValue)
+        {
+            speedReference = MinimumSlipSpeed;
+        }
+
+        float slipRatio = SnapToZero(longitudinalSlipSpeed / speedReference);
+        float slipAngle = SnapToZero(Mathf.Atan2(lateralSpeed, speedReference));
 
         float maxForce = verticalLoad * frictionCoefficient;
 
-        float lowSpeedReference = Mathf.Max(Mathf.Abs(forwardSpeed), Mathf.Abs(wheelSurfaceSpeed));
+        float longitudinalForce =
+            maxForce
+            * PacejkaFormula(
+                slipRatio,
+                LongitudinalStiffness,
+                LongitudinalShape,
+                LongitudinalCurvature
+            );
 
-        bool useLowSpeedModel = lowSpeedReference < LowSpeedTireModelThreshold;
+        float lateralMagnitude =
+            maxForce * PacejkaFormula(slipAngle, LateralStiffness, LateralShape, LateralCurvature);
 
-        float longitudinalForce;
-        float lateralForce;
+        // Positive lateral velocity means the contact patch is sliding toward wheelRight.
+        // Tire force should oppose that slide, so the local lateral force is negative.
+        float lateralForce = -lateralMagnitude;
 
-        if (useLowSpeedModel)
-        {
-            longitudinalForce = longitudinalSlipSpeed * LowSpeedLongitudinalDamping;
-            lateralForce = -lateralSpeed * LowSpeedLateralDamping;
+        ApplyCombinedSlipLimit(ref longitudinalForce, ref lateralForce, maxForce);
 
-            ApplyCombinedSlipLimit(ref longitudinalForce, ref lateralForce, maxForce);
-        }
-        else
-        {
-            longitudinalForce =
-                maxForce
-                * PacejkaFormula(
-                    slipRatio,
-                    LongitudinalStiffness,
-                    LongitudinalShape,
-                    LongitudinalCurvature
-                );
-
-            float lateralMagnitude =
-                maxForce
-                * PacejkaFormula(slipAngle, LateralStiffness, LateralShape, LateralCurvature);
-
-            lateralForce = -lateralMagnitude;
-
-            ApplyCombinedSlipLimit(ref longitudinalForce, ref lateralForce, maxForce);
-        }
         longitudinalForce = CleanNumber(longitudinalForce);
         lateralForce = CleanNumber(lateralForce);
 
@@ -428,6 +388,7 @@ public partial class Wheel : Marker2D
             lateralSpeed,
             wheelSurfaceSpeed,
             longitudinalSlipSpeed,
+            speedReference,
             slipRatio,
             slipAngle,
             wheelAngularVelocity
@@ -466,7 +427,8 @@ public partial class Wheel : Marker2D
         float driveTorque,
         float brakeTorque,
         float brakeInput,
-        float longitudinalTireForce
+        float longitudinalTireForce,
+        float forwardSpeed
     )
     {
         if (WheelInertia <= 0f)
@@ -490,6 +452,8 @@ public partial class Wheel : Marker2D
         float angularAcceleration = totalTorque / WheelInertia;
         float nextOmega = Omega + angularAcceleration * dt;
 
+        nextOmega = SettleFreeRollingWheel(nextOmega, driveTorque, brakeCapacity, forwardSpeed);
+
         if (BrakeWouldStopWheel(brakeCapacity, driveTorque, nextOmega))
         {
             nextOmega = 0f;
@@ -497,6 +461,37 @@ public partial class Wheel : Marker2D
 
         Omega = Mathf.Clamp(nextOmega, -MaximumWheelAngularVelocity, MaximumWheelAngularVelocity);
         Omega = SnapToZero(Omega);
+    }
+
+    private float SettleFreeRollingWheel(
+        float nextOmega,
+        float driveTorque,
+        float brakeCapacity,
+        float forwardSpeed
+    )
+    {
+        bool noDriveTorque = Mathf.Abs(driveTorque) < TinyValue;
+        bool noBrakeTorque = brakeCapacity < TinyValue;
+
+        if (!noDriveTorque || !noBrakeTorque || TireRadius <= TinyValue)
+        {
+            return nextOmega;
+        }
+
+        float rollingOmega = forwardSpeed / TireRadius;
+        float currentSlipOmega = Omega - rollingOmega;
+        float nextSlipOmega = nextOmega - rollingOmega;
+
+        bool crossedRollingOmega =
+            Mathf.Abs(currentSlipOmega) > TinyValue
+            && Mathf.Sign(currentSlipOmega) != Mathf.Sign(nextSlipOmega);
+
+        if (crossedRollingOmega)
+        {
+            return rollingOmega;
+        }
+
+        return nextOmega;
     }
 
     private bool ShouldKeepWheelLocked(float driveTorque, float brakeCapacity)
