@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TransmissionData" format=3 uid="uid://ckf8dhcqdfy4h"]
+
+[ext_resource type="Script" uid="uid://d0wg5ioyxl5kl" path="res://scenes/car/transmission/TransmissionData.cs" id="1_dbwt2"]
+
+[resource]
+script = ExtResource("1_dbwt2")
+metadata/_custom_type_script = "uid://d0wg5ioyxl5kl"

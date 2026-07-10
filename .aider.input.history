@@ -220,3 +220,227 @@
 
 # 2026-07-07 16:29:18.403151
 +/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 16:46:12.627258
++/drop scenes/car/engine/EngineData.cs
+
+# 2026-07-07 16:46:40.918366
++Please modify the EngineCurve file to be formatted as an md file. Use proper use of headings and tables where appropriate
+
+# 2026-07-07 16:47:30.390364
++/add scenes/car/engine/EngineCurve.md
+
+# 2026-07-07 16:58:25.542046
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/engine/
+
+# 2026-07-07 16:58:26.086033
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 16:58:28.411489
++/add scenes/car/Car3.cs
+
+# 2026-07-07 17:00:49.213425
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 17:01:10.929699
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/engine/
+
+# 2026-07-07 17:07:47.888786
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 17:08:58.531963
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/engine/
+
+# 2026-07-07 17:08:59.161868
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 17:09:49.160414
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/engine/
+
+# 2026-07-07 23:05:29.180731
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/transmission/
+
+# 2026-07-07 23:05:30.027750
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:09:06.840698
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/transmission/
+
+# 2026-07-07 23:09:07.700684
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:09:19.356316
++/add scenes/car/drivetrain/transmission/TransmissionData.cs
+
+# 2026-07-07 23:09:19.386299
++/drop scenes/car/transmission/TransmissionData.cs
+
+# 2026-07-07 23:10:21.057228
++/add scenes/car/drivetrain/steering/SteeringData.cs
+
+# 2026-07-07 23:10:53.071035
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-07 23:10:53.577372
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-07 23:10:54.015276
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:11:53.946909
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/transmission/
+
+# 2026-07-07 23:11:54.727528
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-07 23:11:55.773455
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:15:02.432753
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-07 23:15:02.965331
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-07 23:15:03.767807
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:15:34.562684
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-07 23:15:34.956289
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-07 23:15:35.321409
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:19:52.115398
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-07 23:19:52.719193
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-07 23:20:01.766644
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-07 23:58:40.864546
++/drop scenes/car/drivetrain/steering/SteeringData.cs
+
+# 2026-07-07 23:58:45.500407
++/drop scenes/car/drivetrain/transmission/TransmissionData.cs
+
+# 2026-07-07 23:59:04.242525
++/ask what does fzFL, fzFR, fzRL, and fzRR represent?
+
+# 2026-07-08 00:01:35.191851
++n/add scenes/car/wheel/Wheel.cs
+
+# 2026-07-08 00:04:29.656007
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-08 00:04:53.782540
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-08 00:04:54.484406
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-08 00:05:27.938019
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/steering/
+
+# 2026-07-08 00:05:28.697953
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/drivetrain/
+
+# 2026-07-08 00:05:29.070025
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-08 00:06:39.400609
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/
+
+# 2026-07-08 00:06:41.347578
++/drop oil:///home/beau/coding/personal/games/godot/car-game/
+
+# 2026-07-09 16:53:41.599078
++/ask in my car physics I calculate fxMag with D_long * `PacejkaFormula` and fyMag with D_lat * `PacejkaFormula` does this seem right to you based on context? Wouldn't fxMag and fyMag be flipped for latitude and longitude? Do I just have the names wrong and the calculation correct or are the calculations incorrect? 
+
+# 2026-07-09 19:06:43.138082
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-09 19:06:43.593383
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-09 19:06:45.281877
++/add scenes/car/Car3.cs
+
+# 2026-07-09 19:07:35.740739
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-09 20:13:48.816755
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-09 20:13:49.476301
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-09 20:29:03.659597
++/model openai/gpt-5.5
+
+# 2026-07-09 20:33:07.666726
++/ask I have a problem with my Wheel.cs file. For context this is a physics based 2D top down car simulation. Right now the car moves great, and things are working well except for the friction, and tire temperature calculations. There are points in time where friction is at 40k watts even though the car is not moving, and if I play around with the car enough, finalVSlipX, finalFX, finalFy can get stuck at really low values 7.2 E-10 for example. And omega can get stuck at 0. When this happens frictionWatts goes to near 0 and the car does not heat up anymore. The other problem is that sometimes when I am driving and stopping and driving more and then stop, the `finalVSlipX` value is in the 1000's and the frictionWatts is at like 40,000 and continues to heat the wheels. Can you tell me what is going on? Also is there a way to clean up the math so that it's more obvious and simple? I feel like I have done a lot of weird work arounds for something that should be just a few equations and some elipsons
+
+# 2026-07-09 20:39:30.504691
++please clean up the wheel class with all of the changes you suggested
+
+# 2026-07-09 20:42:21.988977
++/add scenes/car/wheel/Wheel.cs
+
+# 2026-07-09 20:44:32.066806
++/ask in the `slipDenominator` calculation you use Mathf.Max with 3 values although the function only takes 2. What was intended with this calculation?
+
+# 2026-07-09 20:48:33.985621
++/ask I would like to poll the debugging so that it prints once per second without slowing down the physics process. How can I do that?
+
+# 2026-07-09 20:59:42.338671
++/ask Here is some data after driving for awhile and then coming to a complete stop and waiting: TireFrontLeft vx:0.13, vy:0.20, wheelSurfaceSpeed:-1.09, longitudinalSlipSpeed:-1.22, slipRatio:-1.117, slipAngle:0.180, fx:-2436.63, fy:-2373.26, sampledOmega:-3.30, omega:1.17, frictionWatts:2719.85, tireTemp:63.74
++TireFrontRight vx:-0.11, vy:0.20, wheelSurfaceSpeed:0.42, longitudinalSlipSpeed:0.52, slipRatio:1.043, slipAngle:0.377, fx:2437.25, fy:-2449.90, sampledOmega:1.26, omega:-3.21, frictionWatts:2406.77, tireTemp:63.41
++TireBackLeft vx:0.13, vy:-0.12, wheelSurfaceSpeed:-0.78, longitudinalSlipSpeed:-0.91, slipRatio:-1.163, slipAngle:-0.148, fx:-2498.80, fy:2307.78, sampledOmega:-2.36, omega:2.22, frictionWatts:2495.45, tireTemp:62.38
++TireBackRight vx:-0.11, vy:-0.12, wheelSurfaceSpeed:0.70, longitudinalSlipSpeed:0.80, slipRatio:1.152, slipAngle:-0.165, fx:2498.50, fy:2387.46, sampledOmega:2.11, omega:-2.47, frictionWatts:2415.24, tireTemp:62.00
++TireFrontLeft vx:0.13, vy:0.20, wheelSurfaceSpeed:-1.09, longitudinalSlipSpeed:-1.22, slipRatio:-1.117, slipAngle:0.180, fx:-2436.63, fy:-2373.26, sampledOmega:-3.30, omega:1.17, frictionWatts:2719.83, tireTemp:63.74
++TireFrontRight vx:-0.11, vy:0.20, wheelSurfaceSpeed:0.42, longitudinalSlipSpeed:0.52, slipRatio:1.043, slipAngle:0.377, fx:2437.25, fy:-2449.90, sampledOmega:1.26, omega:-3.21, frictionWatts:2406.77, tireTemp:63.41
++TireBackLeft vx:0.13, vy:-0.12, wheelSurfaceSpeed:-0.78, longitudinalSlipSpeed:-0.91, slipRatio:-1.163, slipAngle:-0.148, fx:-2498.79, fy:2307.78, sampledOmega:-2.36, omega:2.22, frictionWatts:2495.45, tireTemp:62.38
++TireBackRight vx:-0.11, vy:-0.12, wheelSurfaceSpeed:0.70, longitudinalSlipSpeed:0.80, slipRatio:1.152, slipAngle:-0.165, fx:2498.50, fy:2387.46, sampledOmega:2.11, omega:-2.47, frictionWatts:2415.25, tireTemp:62.00
++
+
+# 2026-07-09 21:05:38.698223
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-09 21:05:39.822102
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/
+
+# 2026-07-09 21:14:38.877158
++/ask is there a way to make it so that I don't need a separate low speed implementation? isthere some sort of math fix for this? I'd rather not have 2 implementations for the same thing
+
+# 2026-07-09 21:25:18.444750
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-09 21:25:22.863012
++/add scenes/car/wheel/Wheel2.cs
+
+# 2026-07-09 21:25:28.460544
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-09 21:25:34.395649
++/drop scenes/car/wheel/Wheel2.cs
+
+# 2026-07-09 21:25:51.915346
++Please apply the math fixes that you presented and remove everything from the first solution you gave me
+
+# 2026-07-09 21:27:56.334887
++/add scenes/car/wheel/Wheel.cs
+
+# 2026-07-09 21:29:57.724560
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/wheel/
+
+# 2026-07-10 18:54:07.039439
++/ask how can I calculate how fast the car is travelling in km/hr using what I currently have?
+
+# 2026-07-10 18:54:27.263102
++/drop oil:///home/beau/coding/personal/games/godot/car-game/scenes/car/

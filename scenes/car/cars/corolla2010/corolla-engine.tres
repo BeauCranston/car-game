@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EngineData" format=3 uid="uid://b0375soaek3u"]
+
+[ext_resource type="Script" uid="uid://b0ivep40ty881" path="res://scenes/car/engine/EngineData.cs" id="1_j2lrl"]
+
+[sub_resource type="Curve" id="Curve_ax2hs"]
+
+[resource]
+script = ExtResource("1_j2lrl")
+MaxEngineTorque = 2000.0
+TorqueCurve = SubResource("Curve_ax2hs")
+metadata/_custom_type_script = "uid://b0ivep40ty881"

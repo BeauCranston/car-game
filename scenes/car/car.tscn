@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dp25eg1xfci47" path="res://scenes/car/Car3.cs" id="1_yhfra"]
 [ext_resource type="Texture2D" uid="uid://b58vdbgetlct3" path="res://assets/car-Sheet.png" id="2_rytg7"]
+[ext_resource type="Resource" uid="uid://ypjpmghm3wlu" path="res://scenes/car/cars/scion_tc_gen2/scion_tc_2016_engine.tres" id="2_x7uf8"]
 [ext_resource type="PackedScene" uid="uid://bnej6a6s8nemp" path="res://scenes/car/wheel/wheel.tscn" id="3_rytg7"]
+[ext_resource type="Resource" uid="uid://ckf8dhcqdfy4h" path="res://scenes/car/cars/scion_tc_gen2/scion_tc_2016_transmission.tres" id="3_tcn38"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_fyhmg"]
 radius = 71.0
@@ -71,6 +73,8 @@ _frontLeftWheel = NodePath("TireFrontLeft")
 _frontRightWheel = NodePath("TireFrontRight")
 _rearLeftWheel = NodePath("TireBackLeft")
 _rearRightWheel = NodePath("TireBackRight")
+Engine = ExtResource("2_x7uf8")
+Transmission = ExtResource("3_tcn38")
 CarSprite = NodePath("Sprite2D")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2093751858]

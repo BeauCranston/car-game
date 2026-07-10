@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EngineData" format=3 uid="uid://ypjpmghm3wlu"]
+
+[ext_resource type="Script" uid="uid://b0ivep40ty881" path="res://scenes/car/engine/EngineData.cs" id="1_ie54l"]
+
+[sub_resource type="Curve" id="Curve_egl32"]
+_data = [Vector2(0, 0.78), 0.0, 0.0, 0, 0, Vector2(0.38, 0.95), 0.0, 0.0, 0, 0, Vector2(0.596, 1), 0.0, 0.0, 0, 0, Vector2(0.961, 0.85), 0.0, 0.0, 0, 0, Vector2(1, 0.77), 0.0, 0.0, 0, 0]
+point_count = 5
+
+[resource]
+script = ExtResource("1_ie54l")
+RedlineRPM = 6200.0
+TorqueCurve = SubResource("Curve_egl32")
+metadata/_custom_type_script = "uid://b0ivep40ty881"

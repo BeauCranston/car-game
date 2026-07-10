@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://bnej6a6s8nemp"]
 
 [ext_resource type="Script" uid="uid://b7nxd3m6ayqhk" path="res://scenes/car/wheel/Wheel.cs" id="1_erp7m"]
+[ext_resource type="PackedScene" uid="uid://dcqm4xm68m5up" path="res://scenes/car/wheel/tire_smoke.tscn" id="2_7gid4"]
 
 [node name="wheel" type="Marker2D" unique_id=1879409597]
 script = ExtResource("1_erp7m")
+TireSmokeScene = ExtResource("2_7gid4")

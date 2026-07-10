@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dcqm4xm68m5up"]
+
+[ext_resource type="Texture2D" uid="uid://dypqosikiww8e" path="res://assets/car-smoke-Sheet.png" id="1_gb4a3"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_tw4nv"]
+particles_animation = true
+particles_anim_h_frames = 4
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[node name="TireSmoke" type="CPUParticles2D" unique_id=310490272]
+top_level = true
+material = SubResource("CanvasItemMaterial_tw4nv")
+texture = ExtResource("1_gb4a3")
+emission_shape = 1
+emission_sphere_radius = 40.42
+gravity = Vector2(0, 0)
+anim_speed_min = 1.0
+anim_speed_max = 1.0
